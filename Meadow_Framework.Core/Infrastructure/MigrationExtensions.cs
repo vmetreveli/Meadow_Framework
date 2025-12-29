@@ -9,6 +9,11 @@ namespace Meadow_Framework.Core.Infrastructure;
 /// </summary>
 public static class MigrationExtensions
 {
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
     public static  WebApplication ApplyMigration(this WebApplication app)
     {
         // Create a scope to retrieve services
@@ -27,11 +32,7 @@ public static class MigrationExtensions
 
                 // Resolve the DbContext and apply migrations
 
-                var context = (DbContext)services.GetRequiredService(dbContextType);
-                // if (context.Database.GetPendingMigrations().Any())
-                //  {
-                //      context.Database.Migrate();
-                //  }
+                DbContext context = (DbContext)services.GetRequiredService(dbContextType);
 
                 if (context.Database.IsNpgsql())
                 {

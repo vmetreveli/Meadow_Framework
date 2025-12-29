@@ -1,10 +1,7 @@
 ﻿using MassTransit;
-using MassTransit.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Quartz;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json.Serialization.Metadata;
 using Meadow_Framework.Core.Abstractions.Commands;
 using Meadow_Framework.Core.Abstractions.Dispatchers;
@@ -26,7 +23,7 @@ using Meadow_Framework.Core.Infrastructure.Seed;
 namespace Meadow_Framework.Core.Infrastructure;
 
 /// <summary>
-///
+///     Provides extension methods for configuring the Meadow Framework services and middleware.
 /// </summary>
 public static class Extensions
 {
@@ -36,45 +33,58 @@ public static class Extensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to which the services will be added.</param>
     /// <param name="configuration">The application configuration used for settings like database connections.</param>
-    /// <param name="assemblies"></param>
+    /// <param name="needEvents">A boolean indicating whether event handling services should be registered. Default is true.</param>
+    /// <param name="assemblies">The assemblies to scan for handlers (commands, queries, events).</param>
     /// <returns>The modified <see cref="IServiceCollection" />.</returns>
     public static IServiceCollection AddFramework(
         this IServiceCollection services,
         IConfiguration configuration,
+        bool needEvents = true,
         params Assembly[] assemblies)
     {
         foreach (var assembly in assemblies)
         {
             services.AddCommands(assembly);
             services.AddQueries(assembly);
-            services.AddEvents(assembly);
+            if (needEvents)
+            {
+                services.AddEvents(assembly);
+            }
         }
 
-        services.AddEventBus(configuration, assemblies);
+        if (needEvents)
+        {
+            services.AddEventBus(configuration, assemblies); 
+        }
+      
         services.AddScoped<IDispatcher, Dispatcher>();
         services.AddErrorHandling();
 
-        services.AddScoped<IOutboxRepository, OutboxRepository>();
+        if (needEvents)
+        {
+            services.AddScoped<IOutboxRepository, OutboxRepository>();
 
-        // Configure the database context with PostgreSQL settings
-        services
-            .AddDbContext<BaseDbContext>((sp, options) =>
-            {
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                    .UseSnakeCaseNamingConvention()
-                    .EnableSensitiveDataLogging()
-                    .EnableDetailedErrors();
-            });
-        services.AddScoped<IUnitOfWork, UnitOfWork<BaseDbContext>>();
+            // Configure the database context with PostgreSQL settings
+            services
+                .AddDbContext<BaseDbContext>((sp, options) =>
+                {
+                    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                        .UseSnakeCaseNamingConvention()
+                        .EnableSensitiveDataLogging()
+                        .EnableDetailedErrors();
+                });
+            services.AddScoped<IUnitOfWork, UnitOfWork<BaseDbContext>>();
+        }
 
         return services;
     }
+
     /// <summary>
-    ///
+    ///     Applies pending database migrations and seeds initial data.
     /// </summary>
-    /// <param name="app"></param>
-    /// <typeparam name="TContext"></typeparam>
-    /// <returns></returns>
+    /// <param name="app">The <see cref="IApplicationBuilder" /> to configure.</param>
+    /// <typeparam name="TContext">The type of the <see cref="DbContext" />.</typeparam>
+    /// <returns>The modified <see cref="IApplicationBuilder" />.</returns>
     public static IApplicationBuilder UseMigration<TContext>(this IApplicationBuilder app)
         where TContext : DbContext
     {
@@ -123,7 +133,7 @@ public static class Extensions
         // Register each command handler as scoped
         foreach (var type in commandHandlerTypes)
         {
-            var interfaces = type.GetInterfaces()
+            IEnumerable<Type> interfaces = type.GetInterfaces()
                 .Where(i =>
                     i.IsGenericType &&
                     (i.GetGenericTypeDefinition() == typeof(ICommandHandler<>)
@@ -175,14 +185,14 @@ public static class Extensions
         services.AddScoped<IEventDispatcher, EventDispatcher>();
 
         // Get all types implementing IEventHandler<>
-        var eventHandlerTypes = assembly.GetTypes()
+        IEnumerable<Type> eventHandlerTypes = assembly.GetTypes()
             .Where(t => t is { IsClass: true, IsAbstract: false } && t.GetInterfaces()
                 .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>)));
 
         // Register each event handler as scoped
         foreach (Type type in eventHandlerTypes)
         {
-            var interfaces = type.GetInterfaces()
+            IEnumerable<Type> interfaces = type.GetInterfaces()
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
 
             foreach (Type interfaceType in interfaces) services.AddScoped(interfaceType, type);
@@ -227,8 +237,8 @@ public static class Extensions
     /// <returns>The modified <see cref="IServiceCollection" />.</returns>
     private static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration, IEnumerable<Assembly> assemblies)
     {
-        var config = configuration.GetSection("AppConfiguration:RabbitMQ").Get<RabbitMqOptions>();
-        var encryptionKey = configuration["AppConfiguration:RabbitMQ:EncryptionKey"];
+        RabbitMqOptions? config = configuration.GetSection("AppConfiguration:RabbitMQ").Get<RabbitMqOptions>();
+        string? encryptionKey = configuration["AppConfiguration:RabbitMQ:EncryptionKey"];
 
         // Add the required Quartz.NET services
         services.AddQuartz(q =>
@@ -252,6 +262,9 @@ public static class Extensions
         return services;
     }
 
+    /// <summary>
+    ///     Configures RabbitMQ host, credentials, and receive endpoints for consumers.
+    /// </summary>
     private static void ConfigureRabbitMq(IBusRegistrationConfigurator configurator, RabbitMqOptions? config, string? encryptionKey, List<Type> consumers)
     {
         configurator.UsingRabbitMq((context, cfg) =>
@@ -275,6 +288,9 @@ public static class Extensions
         });
     }
 
+    /// <summary>
+    ///     Configures JSON serialization options for RabbitMQ to handle sensitive data masking.
+    /// </summary>
     private static void ConfigureRabbitMqSensitiveData(IRabbitMqBusFactoryConfigurator cfg)
     {
          cfg.ConfigureJsonSerializerOptions(options =>
