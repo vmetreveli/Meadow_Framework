@@ -9,7 +9,7 @@ namespace Meadow.Framework.Outbox.Infrastructure.Interceptors;
 /// <summary>
 ///
 /// </summary>
-public sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
+public sealed class InsertOutboxMessagesInterceptor: SaveChangesInterceptor
 {
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
         InterceptionResult<int> result, CancellationToken cancellationToken = default)
@@ -25,7 +25,7 @@ public sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
 
     private static async Task<Task> ConvertDomainEventsToOutboxMessages(DbContext context)
     {
-        var outboxMessages = context.ChangeTracker
+        List<Outbox_OutboxMessage> outboxMessages = context.ChangeTracker
             .Entries<IAggregateRoot>()
             .Select(x => x.Entity)
             .SelectMany(aggregateRoot =>

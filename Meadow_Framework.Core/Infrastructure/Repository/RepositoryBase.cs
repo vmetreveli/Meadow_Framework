@@ -13,7 +13,7 @@ namespace Meadow_Framework.Core.Infrastructure.Repository;
 
 /// <summary>
 ///     Abstract repository implementation for entity operations using Entity Framework.
-///     This class implements <see cref="IRepository{TEntity,TId}" /> and provides basic CRUD operations
+///     This class implements <see /> and provides basic CRUD operations
 ///     for entities with a specified primary key type.
 /// </summary>
 /// <typeparam name="TDbContext">The type of the database context used by this repository.</typeparam>

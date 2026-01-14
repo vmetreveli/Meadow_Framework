@@ -16,7 +16,7 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
     /// <param name="eventData">The event data associated with the database context.</param>
     /// <param name="result">The current result of the interception.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
-    /// <returns>A <see cref="ValueTask{InterceptionResult{T}}" /> representing the asynchronous operation.</returns>
+    /// <returns>A <see /> representing the asynchronous operation.</returns>
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
         InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
