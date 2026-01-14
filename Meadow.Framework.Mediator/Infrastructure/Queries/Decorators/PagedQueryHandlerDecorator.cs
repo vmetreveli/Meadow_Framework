@@ -3,7 +3,6 @@
 namespace Meadow.Framework.Mediator.Infrastructure.Queries.Decorators;
 
 /// <summary>
-///
 /// </summary>
 /// <param name="handler"></param>
 /// <typeparam name="TQuery"></typeparam>

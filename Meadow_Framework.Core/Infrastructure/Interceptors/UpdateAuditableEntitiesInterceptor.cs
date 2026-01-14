@@ -35,11 +35,11 @@ public sealed class UpdateAuditableEntitiesInterceptor : SaveChangesInterceptor
     /// <param name="context">The <see cref="DbContext" /> instance to update.</param>
     private static void UpdateAuditableEntities(DbContext context)
     {
-        var utcNow = DateTime.UtcNow;
-        var entries = context.ChangeTracker.Entries<IAuditableEntity>();
+        DateTime utcNow = DateTime.UtcNow;
+        IEnumerable<EntityEntry<IAuditableEntity>> entries = context.ChangeTracker.Entries<IAuditableEntity>();
 
         // Iterate over the entries to update audit properties based on entity state
-        foreach (var entityEntry in entries)
+        foreach (EntityEntry<IAuditableEntity> entityEntry in entries)
             switch (entityEntry.State)
             {
                 case EntityState.Added:

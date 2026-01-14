@@ -1,5 +1,3 @@
-using Meadow_Framework.Exceptions.Abstractions.Exceptions;
-
 namespace Meadow_Framework.Exceptions.Infrastructure.Exceptions;
 
 /// <summary>
@@ -8,7 +6,6 @@ namespace Meadow_Framework.Exceptions.Infrastructure.Exceptions;
 public sealed class ObjectNotFoundException : InflowException
 {
     /// <summary>
-    ///
     /// </summary>
     /// <param name="objectType"></param>
     /// <param name="objectId"></param>
@@ -20,7 +17,6 @@ public sealed class ObjectNotFoundException : InflowException
 
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="objectType"></param>
     /// <param name="objectId"></param>

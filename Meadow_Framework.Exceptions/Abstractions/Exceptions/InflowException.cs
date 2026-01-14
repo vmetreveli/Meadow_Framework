@@ -1,15 +1,13 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Meadow_Framework.Exceptions.Abstractions.Exceptions;
+﻿namespace Meadow_Framework.Exceptions.Abstractions.Exceptions;
 
 /// <summary>
 ///     Represents the base exception class for all custom exceptions in the Inflow framework.
-///     Provides flexible constructors for various exception scenarios with support for error codes, titles, messages, and log levels.
+///     Provides flexible constructors for various exception scenarios with support for error codes, titles, messages, and
+///     log levels.
 /// </summary>
 public class InflowException : Exception
 {
     /// <summary>
-    ///
     /// </summary>
     /// <param name="title"></param>
     public InflowException(string title)
@@ -18,7 +16,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="title"></param>
     /// <param name="logLevel"></param>
@@ -28,7 +25,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -39,7 +35,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -51,7 +46,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -62,7 +56,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -75,7 +68,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -87,7 +79,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -104,7 +95,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     [ExcludeFromCodeCoverage]
@@ -114,7 +104,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="logLevel"></param>
@@ -125,7 +114,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -136,7 +124,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -148,7 +135,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -160,7 +146,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -173,7 +158,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -186,7 +170,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="title"></param>
@@ -200,7 +183,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -211,7 +193,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -223,7 +204,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -235,7 +215,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -248,7 +227,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -261,7 +239,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -276,7 +253,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -288,7 +264,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -301,7 +276,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -314,7 +288,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -329,7 +302,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>
@@ -345,7 +317,6 @@ public class InflowException : Exception
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="code"></param>
     /// <param name="localizer"></param>

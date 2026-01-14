@@ -24,10 +24,10 @@ public class EventDispatcher(
         CancellationToken cancellationToken = default)
         where TEvent : IDomainEvent
     {
-        using var scope = serviceProvider.CreateScope();
+        using IServiceScope scope = serviceProvider.CreateScope();
 
         // Resolves all registered event handlers for the event type.
-        var handlers = scope.ServiceProvider.GetServices<IEventHandler<IEvent>>();
+        IEnumerable<IEventHandler<IEvent>> handlers = scope.ServiceProvider.GetServices<IEventHandler<IEvent>>();
 
         // If there are any handlers, execute them asynchronously.
         if (handlers.Any())

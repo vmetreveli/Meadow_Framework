@@ -6,17 +6,15 @@ namespace Meadow_Framework.Exceptions.Abstractions.Exceptions;
 /// </summary>
 public class AppValidationException : InflowException
 {
-     /// <summary>
-     ///
-     /// </summary>
-     public AppValidationException()
+    /// <summary>
+    /// </summary>
+    public AppValidationException()
         : base("VALIDATION_ERROR", "Validation error(s) occurred", null, null, LogLevel.Warning)
     {
         Failures = new Dictionary<string, string[]>();
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="logLevel"></param>
     [ExcludeFromCodeCoverage]
@@ -27,7 +25,6 @@ public class AppValidationException : InflowException
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="message"></param>
     [ExcludeFromCodeCoverage]
@@ -38,7 +35,6 @@ public class AppValidationException : InflowException
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="message"></param>
     /// <param name="logLevel"></param>
@@ -49,7 +45,6 @@ public class AppValidationException : InflowException
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="propertyName"></param>
     /// <param name="errorMessage"></param>
@@ -60,7 +55,6 @@ public class AppValidationException : InflowException
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="propertyName"></param>
     /// <param name="errorMessage"></param>
@@ -69,11 +63,10 @@ public class AppValidationException : InflowException
     public AppValidationException(string propertyName, string errorMessage, LogLevel logLevel)
         : this(errorMessage, logLevel)
     {
-      Failures.Add(propertyName, [errorMessage]);
+        Failures.Add(propertyName, [errorMessage]);
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="failures"></param>
     [ExcludeFromCodeCoverage]
@@ -84,7 +77,6 @@ public class AppValidationException : InflowException
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="failures"></param>
     /// <param name="logLevel"></param>
@@ -98,7 +90,7 @@ public class AppValidationException : InflowException
     ///     Gets the dictionary of validation failures, where the key is the property name
     ///     and the value is an array of error messages for that property.
     /// </summary>
-    public IDictionary<string, string[]> Failures { get;  }
+    public IDictionary<string, string[]> Failures { get; }
 
     /// <summary>
     ///     Adds validation failures to the Failures dictionary, grouping them by property name.

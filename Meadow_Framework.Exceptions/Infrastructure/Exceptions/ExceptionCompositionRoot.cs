@@ -1,6 +1,4 @@
-﻿using Meadow_Framework.Exceptions.Abstractions.Exceptions;
-
-namespace Meadow_Framework.Exceptions.Infrastructure.Exceptions;
+﻿namespace Meadow_Framework.Exceptions.Infrastructure.Exceptions;
 
 /// <summary>
 ///     The entry point for handling exceptions by delegating them to registered exception mappers.
@@ -16,16 +14,18 @@ internal sealed class ExceptionCompositionRoot(IServiceProvider serviceProvider)
     public ExceptionResponse Map(Exception exception)
     {
         // Create a new scope to resolve services from the DI container.
-        using var scope = serviceProvider.CreateScope();
+        using IServiceScope scope = serviceProvider.CreateScope();
 
         // Retrieve all registered exception mappers from the DI container.
-        var mappers = scope.ServiceProvider.GetServices<IExceptionToResponseMapper>().ToArray();
+        IExceptionToResponseMapper[]
+            mappers = scope.ServiceProvider.GetServices<IExceptionToResponseMapper>().ToArray();
 
         // Filter out the default ExceptionToResponseMapper to prioritize custom mappers.
-        var nonDefaultMappers = mappers.Where(x => x is not ExceptionToResponseMapper);
+        IEnumerable<IExceptionToResponseMapper> nonDefaultMappers =
+            mappers.Where(x => x is not ExceptionToResponseMapper);
 
         // Use the first custom mapper that successfully maps the exception (non-null result).
-        var result = nonDefaultMappers
+        ExceptionResponse? result = nonDefaultMappers
             .Select(x => x.Map(exception))
             .SingleOrDefault(x => x is not null);
 
@@ -33,7 +33,7 @@ internal sealed class ExceptionCompositionRoot(IServiceProvider serviceProvider)
         if (result is not null) return result;
 
         // Fallback to using the default ExceptionToResponseMapper if no custom mapper handled the exception.
-        var defaultMapper = mappers.SingleOrDefault(x => x is ExceptionToResponseMapper);
+        IExceptionToResponseMapper? defaultMapper = mappers.SingleOrDefault(x => x is ExceptionToResponseMapper);
 
         // Map the exception using the default mapper, if available.
         return defaultMapper?.Map(exception);

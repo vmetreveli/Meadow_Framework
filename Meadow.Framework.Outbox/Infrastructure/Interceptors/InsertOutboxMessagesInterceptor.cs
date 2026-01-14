@@ -1,3 +1,4 @@
+using Meadow_Framework.Core.Abstractions.Events;
 using Meadow_Framework.Core.Abstractions.Primitives.Types;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -7,9 +8,8 @@ using Outbox_OutboxMessage = Meadow.Framework.Outbox.Abstractions.Outbox.OutboxM
 namespace Meadow.Framework.Outbox.Infrastructure.Interceptors;
 
 /// <summary>
-///
 /// </summary>
-public sealed class InsertOutboxMessagesInterceptor: SaveChangesInterceptor
+public sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
 {
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
         InterceptionResult<int> result, CancellationToken cancellationToken = default)
@@ -30,7 +30,7 @@ public sealed class InsertOutboxMessagesInterceptor: SaveChangesInterceptor
             .Select(x => x.Entity)
             .SelectMany(aggregateRoot =>
             {
-                var domainEvents = aggregateRoot.GetDomainEvents();
+                IReadOnlyCollection<IDomainEvent> domainEvents = aggregateRoot.GetDomainEvents();
 
                 aggregateRoot.ClearDomainEvents();
 

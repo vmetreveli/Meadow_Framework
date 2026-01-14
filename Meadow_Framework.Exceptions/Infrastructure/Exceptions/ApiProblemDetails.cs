@@ -1,11 +1,8 @@
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-
 
 namespace Meadow_Framework.Exceptions.Infrastructure.Exceptions;
 
 /// <summary>
-///
 /// </summary>
 public class ApiProblemDetails : ProblemDetails
 {

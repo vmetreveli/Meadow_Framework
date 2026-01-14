@@ -8,17 +8,17 @@ namespace Meadow_Framework.Core.Abstractions;
 public static class StringUtils
 {
     /// <summary>
-    /// Checks if value is null, empty, or consists only of white-space characters
-    /// and returns null if any of the conditions are met, otherwise the text representation of the value.
+    ///     Checks if value is null, empty, or consists only of white-space characters
+    ///     and returns null if any of the conditions are met, otherwise the text representation of the value.
     /// </summary>
     public static string OrNullIfNullOrWhiteSpace(this StringValues value)
     {
-        return OrNullIfNullOrWhiteSpace(value.ToString());
+        return value.ToString().OrNullIfNullOrWhiteSpace();
     }
 
     /// <summary>
-    /// Checks if value is null, empty, or consists only of white-space characters
-    /// and returns null if any of the conditions are met, otherwise the value itself.
+    ///     Checks if value is null, empty, or consists only of white-space characters
+    ///     and returns null if any of the conditions are met, otherwise the value itself.
     /// </summary>
     public static string OrNullIfNullOrWhiteSpace(this string value)
     {
@@ -26,8 +26,8 @@ public static class StringUtils
     }
 
     /// <summary>
-    /// Checks if value is null, empty, or consists only of white-space characters
-    /// and returns value of "or" parameter if any of the conditions are met, otherwise the value itself.
+    ///     Checks if value is null, empty, or consists only of white-space characters
+    ///     and returns value of "or" parameter if any of the conditions are met, otherwise the value itself.
     /// </summary>
     public static string Or(this string value, string or)
     {
@@ -35,7 +35,7 @@ public static class StringUtils
     }
 
     /// <summary>
-    /// Converts the string (pascal case) to camel case, by converting the first character to lowercase.
+    ///     Converts the string (pascal case) to camel case, by converting the first character to lowercase.
     /// </summary>
     public static string ToCamelCase(this string value)
     {
@@ -43,10 +43,7 @@ public static class StringUtils
         {
             string first = char.ToLowerInvariant(value[0]).ToString();
 
-            if (value.Length > 1)
-            {
-                return first + value[1..];
-            }
+            if (value.Length > 1) return first + value[1..];
 
             return first;
         }
@@ -55,49 +52,40 @@ public static class StringUtils
     }
 
     /// <summary>
-    /// Converts the value (ignores case, removes underscores) to an enum value
-    /// and returns null if value is null, empty, or consists only of white-space characters, otherwise enum value.
+    ///     Converts the value (ignores case, removes underscores) to an enum value
+    ///     and returns null if value is null, empty, or consists only of white-space characters, otherwise enum value.
     /// </summary>
     public static TEnum? ToEnum<TEnum>(this StringValues value)
         where TEnum : struct
     {
-        return ToEnum<TEnum>(value.ToString());
+        return value.ToString().ToEnum<TEnum>();
     }
 
     /// <summary>
-    /// Converts the value (ignores case, removes underscores) to an enum
-    /// and returns null if value is null, empty, or consists only of white-space characters, otherwise enum value.
+    ///     Converts the value (ignores case, removes underscores) to an enum
+    ///     and returns null if value is null, empty, or consists only of white-space characters, otherwise enum value.
     /// </summary>
     public static TEnum? ToEnum<TEnum>(this string value)
         where TEnum : struct
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
+        if (string.IsNullOrWhiteSpace(value)) return null;
 
         if (Enum.TryParse(typeof(TEnum), value.Replace("_", string.Empty), true, out object enumValue))
-        {
             return (TEnum)enumValue;
-        }
 
         return null;
     }
 
     /// <summary>
-    /// Indicates whether a specified string is valid JSON.
+    ///     Indicates whether a specified string is valid JSON.
     /// </summary>
     public static bool IsJson(this string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return false;
-        }
+        if (string.IsNullOrWhiteSpace(value)) return false;
 
         value = value.Trim();
 
         if ((value.StartsWith('{') && value.EndsWith('}')) || (value.StartsWith('[') && value.EndsWith(']')))
-        {
             try
             {
                 using JsonDocument doc = JsonDocument.Parse(value);
@@ -107,13 +95,12 @@ public static class StringUtils
             {
                 return false;
             }
-        }
 
         return false;
     }
 
     /// <summary>
-    /// Encrypt data using System.Security.Cryptography.SymmetricAlgorithm.IV and specified key (32 characters).
+    ///     Encrypt data using System.Security.Cryptography.SymmetricAlgorithm.IV and specified key (32 characters).
     /// </summary>
     public static string Encrypt(this string data, string key)
     {
@@ -139,7 +126,7 @@ public static class StringUtils
     }
 
     /// <summary>
-    /// Encrypt data using SHA-256 and specified salt.
+    ///     Encrypt data using SHA-256 and specified salt.
     /// </summary>
     public static string EncryptSha256(this string data, string salt)
     {
@@ -147,16 +134,13 @@ public static class StringUtils
 
         StringBuilder sb = new();
 
-        for (int i = 0; i < bytes.Length; i++)
-        {
-            sb.Append(bytes[i].ToString("x2"));
-        }
+        for (int i = 0; i < bytes.Length; i++) sb.Append(bytes[i].ToString("x2"));
 
         return sb.ToString();
     }
 
     /// <summary>
-    /// Decrypt data using System.Security.Cryptography.SymmetricAlgorithm.IV and specified key (32 characters).
+    ///     Decrypt data using System.Security.Cryptography.SymmetricAlgorithm.IV and specified key (32 characters).
     /// </summary>
     public static string Decrypt(this string data, string key)
     {
@@ -177,7 +161,7 @@ public static class StringUtils
     }
 
     /// <summary>
-    /// Encrypt data deterministicly using ECB mode, specified key and hmac for data integrity.
+    ///     Encrypt data deterministicly using ECB mode, specified key and hmac for data integrity.
     /// </summary>
     public static string EncryptDeterministic(this string data, string key, string hmacKey)
     {
@@ -186,7 +170,8 @@ public static class StringUtils
     }
 
     /// <summary>
-    /// Encrypt data deterministicly using ECB mode, specified key and hmac for data integrity. Gets lowercase hash charat=cters only.
+    ///     Encrypt data deterministicly using ECB mode, specified key and hmac for data integrity. Gets lowercase hash
+    ///     charat=cters only.
     /// </summary>
     /// <returns> encrypted string in lower case characters </returns>
     public static string EncryptLowercaseDeterministic(this string data, string key, string hmacKey)
@@ -196,7 +181,7 @@ public static class StringUtils
     }
 
     /// <summary>
-    /// Dencrypt data deterministicly using ECB mode, specified key and hmac for data integrity.
+    ///     Dencrypt data deterministicly using ECB mode, specified key and hmac for data integrity.
     /// </summary>
     public static string DecryptDeterministic(this string data, string key, string hmacKey)
     {
@@ -205,7 +190,8 @@ public static class StringUtils
     }
 
     /// <summary>
-    /// Dencrypt data deterministicly using ECB mode, specified key and hmac for data integrity. operates on lowercase hash value.
+    ///     Dencrypt data deterministicly using ECB mode, specified key and hmac for data integrity. operates on lowercase hash
+    ///     value.
     /// </summary>
     /// <returns> decrypts lowercased hash and return actual value. </returns>
     public static string DecryptLowercaseDeterministic(this string hexData, string key, string hmacKey)
@@ -224,11 +210,11 @@ public static class StringUtils
 
             ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, null);
 
-            using (MemoryStream ms = new MemoryStream())
+            using (MemoryStream ms = new())
             {
-                using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                using (CryptoStream cs = new(ms, encryptor, CryptoStreamMode.Write))
                 {
-                    using (StreamWriter sw = new StreamWriter(cs))
+                    using (StreamWriter sw = new(cs))
                     {
                         sw.Write(data);
                     }
@@ -262,16 +248,13 @@ public static class StringUtils
 
             // Verify HMAC before decryption
             byte[] computedHmac = ComputeHmac(ciphertext, hmacKey);
-            if (!CompareArrays(computedHmac, hmac))
-            {
-                throw new CryptographicException("Invalid HMAC.");
-            }
+            if (!CompareArrays(computedHmac, hmac)) throw new CryptographicException("Invalid HMAC.");
 
             ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, null);
 
-            using (MemoryStream ms = new MemoryStream(ciphertext))
-            using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-            using (StreamReader sr = new StreamReader(cs))
+            using (MemoryStream ms = new(ciphertext))
+            using (CryptoStream cs = new(ms, decryptor, CryptoStreamMode.Read))
+            using (StreamReader sr = new(cs))
             {
                 return sr.ReadToEnd();
             }
@@ -280,7 +263,7 @@ public static class StringUtils
 
     private static byte[] ComputeHmac(byte[] data, string hmacKey)
     {
-        using (HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(hmacKey)))
+        using (HMACSHA256 hmac = new(Encoding.UTF8.GetBytes(hmacKey)))
         {
             return hmac.ComputeHash(data);
         }
@@ -288,18 +271,11 @@ public static class StringUtils
 
     private static bool CompareArrays(byte[] a, byte[] b)
     {
-        if (a.Length != b.Length)
-        {
-            return false;
-        }
+        if (a.Length != b.Length) return false;
 
         for (int i = 0; i < a.Length; i++)
-        {
             if (a[i] != b[i])
-            {
                 return false;
-            }
-        }
 
         return true;
     }
@@ -312,10 +288,7 @@ public static class StringUtils
     private static byte[] FromHexString(string hex)
     {
         byte[] bytes = new byte[hex.Length / 2];
-        for (int i = 0; i < bytes.Length; i++)
-        {
-            bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
-        }
+        for (int i = 0; i < bytes.Length; i++) bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
         return bytes;
     }
 }

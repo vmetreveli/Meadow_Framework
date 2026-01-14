@@ -1,6 +1,4 @@
-﻿using Meadow_Framework.Core.Abstractions.Primitives;
-
-namespace Meadow.Framework.Mediator.Abstractions.Events;
+﻿namespace Meadow.Framework.Mediator.Abstractions.Events;
 
 /// <summary>
 ///     Defines a dispatcher for publishing events.

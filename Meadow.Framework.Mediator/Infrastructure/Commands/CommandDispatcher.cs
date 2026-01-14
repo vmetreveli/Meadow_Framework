@@ -20,10 +20,10 @@ public sealed class CommandDispatcher(IServiceProvider serviceProvider) : IComma
         where TCommand : class, ICommand
     {
         // Creates a new dependency injection scope to resolve the command handler
-        using var scope = serviceProvider.CreateScope();
+        using IServiceScope scope = serviceProvider.CreateScope();
 
         // Resolves the command handler for the provided command type
-        var handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<TCommand>>();
+        ICommandHandler<TCommand> handler = scope.ServiceProvider.GetRequiredService<ICommandHandler<TCommand>>();
 
         // Invokes the handler's Handle method to process the command
         await handler.Handle(command, cancellationToken);
@@ -42,16 +42,16 @@ public sealed class CommandDispatcher(IServiceProvider serviceProvider) : IComma
         CancellationToken cancellationToken = default)
     {
         // Creates a new dependency injection scope to resolve the command handler
-        using var scope = serviceProvider.CreateScope();
+        using IServiceScope scope = serviceProvider.CreateScope();
 
         // Resolves the handler type dynamically based on the command and result types
-        var handlerType = typeof(ICommandHandler<,>).MakeGenericType(command.GetType(), typeof(TResult));
+        Type handlerType = typeof(ICommandHandler<,>).MakeGenericType(command.GetType(), typeof(TResult));
 
         // Resolves the command handler
-        var handler = scope.ServiceProvider.GetRequiredService(handlerType);
+        object handler = scope.ServiceProvider.GetRequiredService(handlerType);
 
         // Retrieves the Handle method from the resolved handler type
-        var method = handlerType.GetMethod(nameof(ICommandHandler<ICommand, TResult>.Handle));
+        MethodInfo? method = handlerType.GetMethod(nameof(ICommandHandler<ICommand, TResult>.Handle));
 
         // Throws an exception if the handler does not contain a valid Handle method
         if (method is null)

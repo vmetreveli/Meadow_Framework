@@ -20,7 +20,7 @@ public static class SpecificationEvaluator
         where TEntity : EntityBase<TId>
         where TId : notnull
     {
-        var queryable = inputQueryable;
+        IQueryable<TEntity> queryable = inputQueryable;
 
         // Apply the criteria (filter) if it is not null
         if (specification.Criteria is not null)

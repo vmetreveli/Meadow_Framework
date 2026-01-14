@@ -39,13 +39,13 @@ internal sealed class ErrorHandlerMiddleware(
     private async Task HandleErrorAsync(HttpContext context, Exception exception)
     {
         // Map the exception to an error response using the exception composition root.
-        var errorResponse = exceptionCompositionRoot.Map(exception);
+        ExceptionResponse? errorResponse = exceptionCompositionRoot.Map(exception);
 
         // Set the HTTP status code for the response, defaulting to 500 Internal Server Error.
         context.Response.StatusCode = (int)(errorResponse?.StatusCode ?? HttpStatusCode.InternalServerError);
 
         // If there is a response body (error details), write it to the response in JSON format.
-        var response = errorResponse?.Response;
+        object? response = errorResponse?.Response;
         if (response is null) return;
 
         // Write the error response body to the HTTP response.

@@ -6,5 +6,4 @@ namespace Meadow.Framework.Outbox.Abstractions;
 /// </summary>
 public interface IDbContext
 {
-
 }

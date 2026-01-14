@@ -1,5 +1,6 @@
 using System.Data;
 using Meadow_Framework.Core.Abstractions.Repository;
+using Microsoft.EntityFrameworkCore.Storage;
 
 // Provides access to database transaction isolation levels
 
@@ -64,7 +65,7 @@ public class UnitOfWork<TDbContext>(TDbContext context) : IUnitOfWork
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        var currentTransaction = context.Database.CurrentTransaction;
+        IDbContextTransaction? currentTransaction = context.Database.CurrentTransaction;
         if (currentTransaction == null)
             return;
 
@@ -78,7 +79,7 @@ public class UnitOfWork<TDbContext>(TDbContext context) : IUnitOfWork
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
-        var currentTransaction = context.Database.CurrentTransaction;
+        IDbContextTransaction? currentTransaction = context.Database.CurrentTransaction;
         if (currentTransaction == null)
             return;
 

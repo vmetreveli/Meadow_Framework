@@ -7,7 +7,7 @@ namespace Meadow_Framework.Exceptions.Abstractions.Exceptions;
 public class HttpException : InflowException
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified title.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified title.
     /// </summary>
     /// <param name="title">The title of the exception.</param>
     public HttpException(string title) : base(title)
@@ -15,7 +15,7 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified title and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified title and log level.
     /// </summary>
     /// <param name="title">The title of the exception.</param>
     /// <param name="logLevel">The log level of the exception.</param>
@@ -24,7 +24,7 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code and title.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code and title.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -33,7 +33,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, title, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, title, and log
+    ///     level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -43,7 +44,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, title, and message.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, title, and
+    ///     message.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -53,7 +55,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, title, message, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, title, message,
+    ///     and log level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -65,7 +68,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, title, message, and a reference to the inner exception that is the cause of this exception.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, title, message,
+    ///     and a reference to the inner exception that is the cause of this exception.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -77,7 +81,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, title, message, a reference to the inner exception that is the cause of this exception, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, title, message, a
+    ///     reference to the inner exception that is the cause of this exception, and log level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -90,7 +95,7 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code.
     /// </summary>
     /// <param name="code">The error code.</param>
     public HttpException(Enum code) : base(code)
@@ -98,7 +103,7 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code and log level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="logLevel">The log level of the exception.</param>
@@ -107,7 +112,7 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code and title.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code and title.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -116,7 +121,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, title, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, title, and log
+    ///     level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -126,7 +132,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, title, and message.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, title, and
+    ///     message.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -136,7 +143,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, title, message, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, title, message,
+    ///     and log level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -148,7 +156,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, title, message, and a reference to the inner exception that is the cause of this exception.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, title, message,
+    ///     and a reference to the inner exception that is the cause of this exception.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -160,7 +169,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, title, message, a reference to the inner exception that is the cause of this exception, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, title, message, a
+    ///     reference to the inner exception that is the cause of this exception, and log level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="title">The title of the exception.</param>
@@ -173,7 +183,7 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code and a localizer.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code and a localizer.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -182,7 +192,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer, and
+    ///     log level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -192,7 +203,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, and a message.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer, and
+    ///     a message.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -202,7 +214,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, a message, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer, a
+    ///     message, and log level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -214,7 +227,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, a message, and a reference to the inner exception that is the cause of this exception.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer, a
+    ///     message, and a reference to the inner exception that is the cause of this exception.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -226,7 +240,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, a message, a reference to the inner exception that is the cause of this exception, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer, a
+    ///     message, a reference to the inner exception that is the cause of this exception, and log level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -239,7 +254,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, and localizer arguments.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer, and
+    ///     localizer arguments.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -250,7 +266,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, localizer arguments, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer,
+    ///     localizer arguments, and log level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -262,7 +279,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, localizer arguments, and a message.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer,
+    ///     localizer arguments, and a message.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -274,7 +292,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, localizer arguments, a message, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer,
+    ///     localizer arguments, a message, and log level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -287,7 +306,8 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, localizer arguments, a message, and a reference to the inner exception that is the cause of this exception.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer,
+    ///     localizer arguments, a message, and a reference to the inner exception that is the cause of this exception.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>
@@ -300,7 +320,9 @@ public class HttpException : InflowException
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpException"/> class with a specified error code, a localizer, localizer arguments, a message, a reference to the inner exception that is the cause of this exception, and log level.
+    ///     Initializes a new instance of the <see cref="HttpException" /> class with a specified error code, a localizer,
+    ///     localizer arguments, a message, a reference to the inner exception that is the cause of this exception, and log
+    ///     level.
     /// </summary>
     /// <param name="code">The error code.</param>
     /// <param name="localizer">The string localizer.</param>

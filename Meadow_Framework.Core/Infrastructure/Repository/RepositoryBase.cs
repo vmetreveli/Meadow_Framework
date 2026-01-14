@@ -224,9 +224,9 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
     public async Task<(List<TEntity> entity, long TotalCount)> GetPaginatedAsync(int pageIndex, int pageSize,
         CancellationToken cancellationToken)
     {
-        var totalCount = context.Set<TEntity>().LongCountAsync(cancellationToken);
+        Task<long> totalCount = context.Set<TEntity>().LongCountAsync(cancellationToken);
 
-        var entities = await context
+        List<TEntity> entities = await context
             .Set<TEntity>()
             .Include(p => p)
             .AsNoTracking()

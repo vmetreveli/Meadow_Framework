@@ -8,7 +8,7 @@ namespace Meadow_Framework.Core.Abstractions.Primitives;
 /// </summary>
 /// <typeparam name="TId">The type of the identifier.</typeparam>
 public abstract class AggregateRoot<TId> : EntityBase<TId>, IAggregateRoot
-    where TId: notnull
+    where TId : notnull
 {
     // A list to keep track of domain events related to this aggregate root.
     private readonly List<IDomainEvent> _domainEvents = new();

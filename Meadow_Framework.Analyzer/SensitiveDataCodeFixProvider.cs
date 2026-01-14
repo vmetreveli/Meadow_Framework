@@ -11,34 +11,33 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Meadow_Framework.Analyzer;
 
 /// <summary>
-/// 
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp)]
 [Shared]
 public sealed class SensitiveDataCodeFixProvider : CodeFixProvider
 {
     /// <summary>
-    ///
     /// </summary>
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(SensitiveDataPropertyAnalyzer.DiagnosticId);
 
     /// <summary>
-    ///
     /// </summary>
     /// <returns></returns>
-    public override FixAllProvider? GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider? GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="context"></param>
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var diagnostic = context.Diagnostics.Single();
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
+        Diagnostic diagnostic = context.Diagnostics.Single();
+        SyntaxNode? root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
 
-        var node = root?.FindNode(diagnostic.Location.SourceSpan);
+        SyntaxNode? node = root?.FindNode(diagnostic.Location.SourceSpan);
 
         if (node is not PropertyDeclarationSyntax property)
             return;
@@ -56,17 +55,17 @@ public sealed class SensitiveDataCodeFixProvider : CodeFixProvider
         SyntaxNode root,
         PropertyDeclarationSyntax property)
     {
-        var attribute =
+        AttributeSyntax attribute =
             SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("SensitiveData"));
 
-        var attributeList =
+        AttributeListSyntax attributeList =
             SyntaxFactory.AttributeList(
                 SyntaxFactory.SingletonSeparatedList(attribute));
 
-        var newProperty =
+        PropertyDeclarationSyntax newProperty =
             property.AddAttributeLists(attributeList);
 
-        var newRoot = root.ReplaceNode(property, newProperty);
+        SyntaxNode newRoot = root.ReplaceNode(property, newProperty);
         return Task.FromResult(document.WithSyntaxRoot(newRoot));
     }
 }

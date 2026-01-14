@@ -1,7 +1,6 @@
 ﻿namespace Meadow_Framework.Exceptions.Infrastructure.Exceptions;
 
 /// <summary>
-///
 /// </summary>
 /// <param name="logger"></param>
 public class RequestResponseLoggingMiddleware(ILoggerFactory logger) : IMiddleware
@@ -13,14 +12,13 @@ public class RequestResponseLoggingMiddleware(ILoggerFactory logger) : IMiddlewa
     private readonly ILogger _logger = logger.CreateLogger(nameof(RequestResponseLoggingMiddleware));
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="context"></param>
     /// <param name="next"></param>
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        var messageId = context.Items["MessageId"]!.ToString();
-        var requestStream = new StreamReader(context.Request.Body);
+        string? messageId = context.Items["MessageId"]!.ToString();
+        StreamReader requestStream = new(context.Request.Body);
         string requestBodyString;
 
         if (context.Request.HasFormContentType)
@@ -33,9 +31,9 @@ public class RequestResponseLoggingMiddleware(ILoggerFactory logger) : IMiddlewa
             context.Request.Body.Seek(0, SeekOrigin.Begin);
         }
 
-        var headers = context.Request.Headers.ToDictionary(x => x.Key, y => y.Value);
+        Dictionary<string, StringValues> headers = context.Request.Headers.ToDictionary(x => x.Key, y => y.Value);
 
-        foreach (var notToLogHeader in NotToLogHeaders) headers.Remove(notToLogHeader);
+        foreach (string notToLogHeader in NotToLogHeaders) headers.Remove(notToLogHeader);
 
         _logger.LogInformation("{MessageId} {Method} {QueryString} {Headers} {RequestBody}",
             messageId,
@@ -44,8 +42,8 @@ public class RequestResponseLoggingMiddleware(ILoggerFactory logger) : IMiddlewa
             headers,
             requestBodyString);
 
-        await using var ms = new MemoryStream();
-        var originalResponseBodyStream = context.Response.Body;
+        await using MemoryStream ms = new();
+        Stream originalResponseBodyStream = context.Response.Body;
         context.Response.Body = ms;
 
         try
@@ -53,8 +51,8 @@ public class RequestResponseLoggingMiddleware(ILoggerFactory logger) : IMiddlewa
             await next(context);
 
             ms.Seek(0, SeekOrigin.Begin);
-            using var streamReader = new StreamReader(ms);
-            var responseBodyString = await streamReader.ReadToEndAsync();
+            using StreamReader streamReader = new(ms);
+            string responseBodyString = await streamReader.ReadToEndAsync();
             ms.Seek(0, SeekOrigin.Begin);
 
             await ms.CopyToAsync(originalResponseBodyStream);
@@ -71,12 +69,12 @@ public class RequestResponseLoggingMiddleware(ILoggerFactory logger) : IMiddlewa
 
     private string HandleFormDataRequest(HttpContext context)
     {
-        var jObject = new JObject();
+        JObject jObject = new();
 
-        var formKeys = context.Request.Form.Keys;
+        ICollection<string> formKeys = context.Request.Form.Keys;
 
-        foreach (var key in formKeys)
-            if (context.Request.Form.TryGetValue(key, out var s))
+        foreach (string key in formKeys)
+            if (context.Request.Form.TryGetValue(key, out StringValues s))
                 jObject.Add(key, s.ToString());
 
         return jObject.ToString();
@@ -85,14 +83,14 @@ public class RequestResponseLoggingMiddleware(ILoggerFactory logger) : IMiddlewa
 
     private string HandleRegularJsonRequest(string originalBodyString)
     {
-        var jObject = new JObject();
+        JObject jObject = new();
         string requestBodyString = default;
 
         try
         {
             jObject = JObject.Parse(originalBodyString);
 
-            foreach (var key in NotToLogKeys)
+            foreach (string key in NotToLogKeys)
                 if (jObject.ContainsKey(key))
                     jObject.Remove(key);
 

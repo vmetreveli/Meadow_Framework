@@ -20,6 +20,3 @@ global using System.Diagnostics.CodeAnalysis;
 global using FluentValidation.Results;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Localization;
-
-
-

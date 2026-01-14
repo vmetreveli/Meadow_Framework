@@ -4,14 +4,12 @@ using System.Text.Json.Serialization;
 namespace Meadow_Framework.Core.Infrastructure.Security;
 
 /// <summary>
-///
 /// </summary>
 public sealed class MaskedStringJsonConverter : JsonConverter<string>
 {
     private readonly string _mask;
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="mask"></param>
     public MaskedStringJsonConverter(string mask)
@@ -20,7 +18,6 @@ public sealed class MaskedStringJsonConverter : JsonConverter<string>
     }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="reader"></param>
     /// <param name="typeToConvert"></param>
@@ -30,10 +27,11 @@ public sealed class MaskedStringJsonConverter : JsonConverter<string>
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options)
-        => reader.GetString()!;
+    {
+        return reader.GetString()!;
+    }
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="writer"></param>
     /// <param name="value"></param>
@@ -42,5 +40,7 @@ public sealed class MaskedStringJsonConverter : JsonConverter<string>
         Utf8JsonWriter writer,
         string value,
         JsonSerializerOptions options)
-        => writer.WriteStringValue(_mask);
+    {
+        writer.WriteStringValue(_mask);
+    }
 }

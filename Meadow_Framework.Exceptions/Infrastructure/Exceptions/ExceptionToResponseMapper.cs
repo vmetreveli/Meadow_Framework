@@ -1,6 +1,4 @@
-﻿using Meadow_Framework.Exceptions.Abstractions.Exceptions;
-
-namespace Meadow_Framework.Exceptions.Infrastructure.Exceptions;
+﻿namespace Meadow_Framework.Exceptions.Infrastructure.Exceptions;
 
 /// <summary>
 ///     Maps exceptions to standardized HTTP responses. This class is responsible for
@@ -40,7 +38,7 @@ internal sealed class ExceptionToResponseMapper : IExceptionToResponseMapper
     /// <returns>A string representing the error code.</returns>
     private static string GetErrorCode(object exception)
     {
-        var type = exception.GetType();
+        Type type = exception.GetType();
         // Generate a humanized, underscored error code from the exception type name.
         return Codes.GetOrAdd(type, type.Name.Underscore().Replace("_exception", string.Empty));
     }

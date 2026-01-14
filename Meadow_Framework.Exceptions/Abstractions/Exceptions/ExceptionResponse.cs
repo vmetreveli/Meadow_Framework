@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace Meadow_Framework.Exceptions.Abstractions.Exceptions;
+﻿namespace Meadow_Framework.Exceptions.Abstractions.Exceptions;
 
 /// <summary>
 ///     Represents a response for an exception, containing the response object and HTTP status code.

@@ -3,16 +3,14 @@ using Microsoft.EntityFrameworkCore;
 namespace Meadow.Framework.Outbox.Infrastructure.Context;
 
 /// <summary>
-///
 /// </summary>
 public class InMemoryDbContextFixture : IDisposable
 {
     /// <summary>
-    ///
     /// </summary>
     public InMemoryDbContextFixture()
     {
-        var options = new DbContextOptionsBuilder<BaseDbContext>()
+        DbContextOptions<BaseDbContext> options = new DbContextOptionsBuilder<BaseDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .EnableSensitiveDataLogging()
             .Options;

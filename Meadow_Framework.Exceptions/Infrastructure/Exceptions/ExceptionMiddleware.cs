@@ -23,7 +23,7 @@ public class ExceptionMiddleware
     public ExceptionMiddleware(RequestDelegate next, Dictionary<Type, int> statusCodes)
     {
         _next = next;
-        foreach (var statusCode in statusCodes) _statusCodes[statusCode.Key] = statusCode.Value;
+        foreach (KeyValuePair<Type, int> statusCode in statusCodes) _statusCodes[statusCode.Key] = statusCode.Value;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -58,7 +58,7 @@ public class ExceptionMiddleware
         context.Response.StatusCode =
             apiProblemDetails.Status.GetValueOrDefault(StatusCodes.Status500InternalServerError);
         context.Response.ContentType = "application/json";
-        var serializerOptions = new JsonSerializerOptions
+        JsonSerializerOptions serializerOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
@@ -73,7 +73,7 @@ public class ExceptionMiddleware
         {
             ApiProblemDetails apiProblemDetails = new()
             {
-                Status = _statusCodes.TryGetValue(ex.GetType(), out var statusCode)
+                Status = _statusCodes.TryGetValue(ex.GetType(), out int statusCode)
                     ? statusCode
                     : _statusCodes[typeof(InflowException)],
                 Type = ex.Code,
@@ -90,7 +90,8 @@ public class ExceptionMiddleware
 
             foreach (DictionaryEntry item in ex.Data) apiProblemDetails.Extensions.Add(item.Key.ToString(), item.Value);
 
-            foreach (KeyValuePair<string, string> item in ex.ResponseHeaders) context.Response.Headers.Append(item.Key, item.Value);
+            foreach (KeyValuePair<string, string> item in ex.ResponseHeaders)
+                context.Response.Headers.Append(item.Key, item.Value);
 
             await SetResponse(context, apiProblemDetails);
         }
@@ -100,8 +101,8 @@ public class ExceptionMiddleware
     {
         if (context.Response.HasStarted) return;
 
-        var externalApiProblemDetails = TryGetExternalApiProblemDetails(ex);
-        var apiProblemDetails = CreateApiProblemDetails(ex, context, externalApiProblemDetails);
+        ApiProblemDetails? externalApiProblemDetails = TryGetExternalApiProblemDetails(ex);
+        ApiProblemDetails apiProblemDetails = CreateApiProblemDetails(ex, context, externalApiProblemDetails);
 
         AddExtensions(apiProblemDetails, externalApiProblemDetails);
         AddHeaders(ex, context);
@@ -113,7 +114,7 @@ public class ExceptionMiddleware
     {
         try
         {
-            var details = ex.DeserializeContent<ApiProblemDetails>();
+            ApiProblemDetails? details = ex.DeserializeContent<ApiProblemDetails>();
             return details?.IsApiProblemDetails == true ? details : null;
         }
         catch
@@ -144,9 +145,9 @@ public class ExceptionMiddleware
     {
         if (externalApiProblemDetails?.Extensions == null) return;
 
-        foreach (var item in externalApiProblemDetails.Extensions)
+        foreach (KeyValuePair<string, object> item in externalApiProblemDetails.Extensions)
         {
-            var value = item.Value is JObject jObject
+            object? value = item.Value is JObject jObject
                 ? jObject.ToObject<Dictionary<string, object>>()
                 : item.Value;
 
@@ -156,7 +157,7 @@ public class ExceptionMiddleware
 
     private static void AddHeaders(ApiException ex, HttpContext context)
     {
-        if (ex.Headers.TryGetValues("X-Sca-Requirements", out var scaRequirements))
+        if (ex.Headers.TryGetValues("X-Sca-Requirements", out IEnumerable<string>? scaRequirements))
             context.Response.Headers.Append("X-Sca-Requirements", new StringValues(scaRequirements.ToArray()));
     }
 
@@ -166,7 +167,7 @@ public class ExceptionMiddleware
         {
             ApiProblemDetails apiProblemDetails = new()
             {
-                Status = _statusCodes.TryGetValue(ex.GetType(), out var statusCode)
+                Status = _statusCodes.TryGetValue(ex.GetType(), out int statusCode)
                     ? statusCode
                     : _statusCodes[typeof(Exception)],
                 Type = "ERROR",

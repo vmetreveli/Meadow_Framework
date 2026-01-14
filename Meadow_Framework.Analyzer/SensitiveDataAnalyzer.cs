@@ -9,24 +9,22 @@ using static Microsoft.CodeAnalysis.LanguageNames;
 namespace Meadow_Framework.Analyzer;
 
 /// <summary>
-///
 /// </summary>
 [DiagnosticAnalyzer(CSharp)]
 public sealed class SensitiveDataPropertyAnalyzer : DiagnosticAnalyzer
 {
     /// <summary>
-    ///
     /// </summary>
     public const string DiagnosticId = "SD001";
 
     private static readonly DiagnosticDescriptor Rule =
-        new DiagnosticDescriptor(
+        new(
             DiagnosticId,
             "Sensitive data property should be annotated",
             "Property '{0}' looks like sensitive data and should be marked with [SensitiveData]",
             "Security",
             DiagnosticSeverity.Warning,
-            isEnabledByDefault: true);
+            true);
 
     private static readonly ImmutableHashSet<string> DefaultSensitiveNames =
         ImmutableHashSet.Create(
@@ -38,13 +36,11 @@ public sealed class SensitiveDataPropertyAnalyzer : DiagnosticAnalyzer
             "Address");
 
     /// <summary>
-    ///
     /// </summary>
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
         => ImmutableArray.Create(Rule);
 
     /// <summary>
-    ///
     /// </summary>
     /// <param name="context"></param>
     public override void Initialize(AnalysisContext context)
@@ -54,7 +50,7 @@ public sealed class SensitiveDataPropertyAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(startContext =>
         {
-            var sensitiveNames = GetSensitiveNames(startContext.Options);
+            ImmutableHashSet<string> sensitiveNames = GetSensitiveNames(startContext.Options);
 
             startContext.RegisterSymbolAction(
                 ctx => AnalyzeProperty(ctx, sensitiveNames),
@@ -66,7 +62,7 @@ public sealed class SensitiveDataPropertyAnalyzer : DiagnosticAnalyzer
         SymbolAnalysisContext context,
         ImmutableHashSet<string> sensitiveNames)
     {
-        var property = (IPropertySymbol)context.Symbol;
+        IPropertySymbol property = (IPropertySymbol)context.Symbol;
 
         // Only string properties
         if (property.Type.SpecialType != SpecialType.System_String)

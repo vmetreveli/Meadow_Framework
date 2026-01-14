@@ -31,7 +31,6 @@ public static class Extensions
     /// <returns>The modified <see cref="IServiceCollection" />.</returns>
     public static IServiceCollection AddFramework(this IServiceCollection services)
     {
-
         services.AddScoped<IOutboxRepository, OutboxRepository>();
 
 
@@ -74,7 +73,6 @@ public static class Extensions
     }
 
 
-
     // /// <summary>
     // ///     Adds event dispatching and event handlers to the <see cref="IServiceCollection" />.
     // ///     Registers all types that implement <see cref="IEventHandler{TEvent}" />.
@@ -104,12 +102,11 @@ public static class Extensions
     // }
 
 
-
-
     /// <summary>
     ///     Configures RabbitMQ host, credentials, and receive endpoints for consumers.
     /// </summary>
-    private static void ConfigureRabbitMq(IBusRegistrationConfigurator configurator, RabbitMqOptions? config, string? encryptionKey, List<Type> consumers)
+    private static void ConfigureRabbitMq(IBusRegistrationConfigurator configurator, RabbitMqOptions? config,
+        string? encryptionKey, List<Type> consumers)
     {
         configurator.UsingRabbitMq((context, cfg) =>
         {
@@ -123,12 +120,8 @@ public static class Extensions
 
             // Configure receive endpoints
             foreach (Type consumerType in consumers)
-            {
-                cfg.ReceiveEndpoint(consumerType.Name, endpoint =>
-                {
-                    endpoint.ConfigureConsumer(context, consumerType);
-                });
-            }
+                cfg.ReceiveEndpoint(consumerType.Name,
+                    endpoint => { endpoint.ConfigureConsumer(context, consumerType); });
         });
     }
 
@@ -137,28 +130,26 @@ public static class Extensions
     /// </summary>
     private static void ConfigureRabbitMqSensitiveData(IRabbitMqBusFactoryConfigurator cfg)
     {
-         cfg.ConfigureJsonSerializerOptions(options =>
-         {
-             var resolver = options.TypeInfoResolver
-                            ?? new DefaultJsonTypeInfoResolver();
+        cfg.ConfigureJsonSerializerOptions(options =>
+        {
+            IJsonTypeInfoResolver resolver = options.TypeInfoResolver
+                                             ?? new DefaultJsonTypeInfoResolver();
 
-             options.TypeInfoResolver = resolver.WithAddedModifier(typeInfo =>
-             {
-                 foreach (var property in typeInfo.Properties)
-                 {
-                     if (property.AttributeProvider?
-                             .IsDefined(typeof(SensitiveDataAttribute), inherit: false) == true)
-                     {
-                         SensitiveDataAttribute attribute = (SensitiveDataAttribute)
-                             property.AttributeProvider!
-                                 .GetCustomAttributes(typeof(SensitiveDataAttribute), false)
-                                 .FirstOrDefault()!;
+            options.TypeInfoResolver = resolver.WithAddedModifier(typeInfo =>
+            {
+                foreach (JsonPropertyInfo property in typeInfo.Properties)
+                    if (property.AttributeProvider?
+                            .IsDefined(typeof(SensitiveDataAttribute), false) == true)
+                    {
+                        SensitiveDataAttribute attribute = (SensitiveDataAttribute)
+                            property.AttributeProvider!
+                                .GetCustomAttributes(typeof(SensitiveDataAttribute), false)
+                                .FirstOrDefault()!;
 
-                         property.CustomConverter =
-                             new MaskedStringJsonConverter(attribute.Mask);
-                     }
-                 }
-             });
+                        property.CustomConverter =
+                            new MaskedStringJsonConverter(attribute.Mask);
+                    }
+            });
 
             return options;
         });
@@ -177,15 +168,15 @@ public static class Extensions
         IConfiguration config)
         where T : IJob
     {
-        var jobName = typeof(T).Name;
-        var configKey = $"AppConfiguration:Quartz:{jobName}";
-        var cronSchedule = config[configKey];
+        string jobName = typeof(T).Name;
+        string configKey = $"AppConfiguration:Quartz:{jobName}";
+        string? cronSchedule = config[configKey];
 
         // Validate that the cron schedule exists
         if (string.IsNullOrEmpty(cronSchedule))
             throw new FrameworkException($"No Quartz.NET Cron schedule found for job in configuration at {configKey}");
 
-        var jobKey = new JobKey(jobName);
+        JobKey jobKey = new(jobName);
 
         // Register the job and trigger using the cron schedule from configuration
         quartz.AddJob<T>(opts => opts.WithIdentity(jobKey));
