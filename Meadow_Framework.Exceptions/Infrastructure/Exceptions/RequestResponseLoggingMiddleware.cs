@@ -1,5 +1,9 @@
 ﻿namespace Meadow_Framework.Exceptions.Infrastructure.Exceptions;
 
+/// <summary>
+///
+/// </summary>
+/// <param name="logger"></param>
 public class RequestResponseLoggingMiddleware(ILoggerFactory logger) : IMiddleware
 {
     private static readonly string[] NotToLogKeys =
@@ -8,6 +12,11 @@ public class RequestResponseLoggingMiddleware(ILoggerFactory logger) : IMiddlewa
     private static readonly string[] NotToLogHeaders = { };
     private readonly ILogger _logger = logger.CreateLogger(nameof(RequestResponseLoggingMiddleware));
 
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="next"></param>
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         var messageId = context.Items["MessageId"]!.ToString();

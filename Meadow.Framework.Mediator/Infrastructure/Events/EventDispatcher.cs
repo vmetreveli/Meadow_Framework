@@ -1,6 +1,4 @@
 ﻿using MassTransit;
-using Meadow_Framework.Core.Abstractions.Outbox;
-using Meadow_Framework.Core.Abstractions.Primitives;
 using Meadow_Framework.Core.Abstractions.Repository;
 using Meadow.Framework.Mediator.Abstractions.Events;
 
@@ -34,7 +32,7 @@ public class EventDispatcher(
         // If there are any handlers, execute them asynchronously.
         if (handlers.Any())
         {
-            var tasks = handlers.Select(handler => handler.HandleAsync(@event, cancellationToken));
+            IEnumerable<Task> tasks = handlers.Select(handler => handler.HandleAsync(@event, cancellationToken));
             await Task.WhenAll(tasks); // Execute all handler tasks concurrently.
         }
     }

@@ -1,5 +1,4 @@
-﻿using Meadow_Framework.Core.Abstractions.Events;
-using Meadow_Framework.Core.Abstractions.Primitives;
+﻿using Meadow_Framework.Core.Abstractions.Primitives;
 
 namespace Meadow.Framework.Outbox.Abstractions.Events;
 

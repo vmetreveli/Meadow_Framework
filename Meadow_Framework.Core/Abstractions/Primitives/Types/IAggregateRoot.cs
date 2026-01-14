@@ -1,11 +1,9 @@
-using Meadow_Framework.Core.Abstractions.Events;
-
 namespace Meadow_Framework.Core.Abstractions.Primitives.Types;
 
 /// <summary>
 ///     Represents an aggregate root in the domain model.
 /// </summary>
-public interface IAggregateRoot
+public interface IAggregateRoot<out IDomainEvent>
 {
     /// <summary>
     ///     Gets the collection of domain events associated with the aggregate root.
