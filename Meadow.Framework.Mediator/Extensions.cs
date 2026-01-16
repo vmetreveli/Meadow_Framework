@@ -25,7 +25,7 @@ public static class Extensions
     /// <param name="configuration">The application configuration used for settings like database connections.</param>
     /// <param name="assemblies">The assemblies to scan for handlers (commands, queries, events).</param>
     /// <returns>The modified <see cref="IServiceCollection" />.</returns>
-    public static IServiceCollection AddMediatorFramework(
+    public static IServiceCollection AddMediator(
         this IServiceCollection services,
         IConfiguration configuration,
         params Assembly[] assemblies)
