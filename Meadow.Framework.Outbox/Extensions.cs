@@ -29,7 +29,7 @@ public static class Extensions
     /// <param name="services">The <see cref="IServiceCollection" /> to which the services will be added.</param>
     /// <param>The application configuration used for settings like database connections.</param>
     /// <returns>The modified <see cref="IServiceCollection" />.</returns>
-    public static IServiceCollection AddFramework(this IServiceCollection services)
+    public static IServiceCollection AddOutboxFramework(this IServiceCollection services)
     {
         services.AddScoped<IOutboxRepository, OutboxRepository>();
 
@@ -71,36 +71,6 @@ public static class Extensions
         IEnumerable<IDataSeeder> seeders = scope.ServiceProvider.GetServices<IDataSeeder>();
         foreach (IDataSeeder seeder in seeders) await seeder.SeedAllAsync();
     }
-
-
-    // /// <summary>
-    // ///     Adds event dispatching and event handlers to the <see cref="IServiceCollection" />.
-    // ///     Registers all types that implement <see cref="IEventHandler{TEvent}" />.
-    // /// </summary>
-    // /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
-    // /// <param name="assembly">The assembly to scan for event handlers.</param>
-    // /// <returns>The modified <see cref="IServiceCollection" />.</returns>
-    // private static IServiceCollection AddEvents(this IServiceCollection services, Assembly assembly)
-    // {
-    //     services.AddScoped<IEventDispatcher, EventDispatcher>();
-    //
-    //     // Get all types implementing IEventHandler<>
-    //     IEnumerable<Type> eventHandlerTypes = assembly.GetTypes()
-    //         .Where(t => t is { IsClass: true, IsAbstract: false } && t.GetInterfaces()
-    //             .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>)));
-    //
-    //     // Register each event handler as scoped
-    //     foreach (Type type in eventHandlerTypes)
-    //     {
-    //         IEnumerable<Type> interfaces = type.GetInterfaces()
-    //             .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
-    //
-    //         foreach (Type interfaceType in interfaces) services.AddScoped(interfaceType, type);
-    //     }
-    //
-    //     return services;
-    // }
-
 
     /// <summary>
     ///     Configures RabbitMQ host, credentials, and receive endpoints for consumers.
