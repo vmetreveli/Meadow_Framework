@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <Version>0.0.0</Version>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <PackageId>Meadow.Framework.Application.Abstractions</PackageId>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/vmetreveli/Meadow_Framework</RepositoryUrl>
+        <Authors>vmetreveli</Authors>
+        <Company>vmetreveli</Company>
+        <Description>CQRS and Mediator contracts for Meadow Framework - commands, queries, handlers, and dispatchers.</Description>
+        <PackageTags>framework;meadow;cqrs;abstractions</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+        <LangVersion>13</LangVersion>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Meadow.Framework.Domain.Abstractions\Meadow.Framework.Domain.Abstractions.csproj"/>
+    </ItemGroup>
+
+</Project>

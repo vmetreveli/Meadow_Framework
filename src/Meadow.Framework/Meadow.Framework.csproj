@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <Version>0.0.0</Version>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <PackageId>Meadow.Framework</PackageId>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/vmetreveli/Meadow_Framework</RepositoryUrl>
+        <Authors>vmetreveli</Authors>
+        <Company>vmetreveli</Company>
+        <Description>Meta package for Meadow Framework - provides convenient single reference to all framework components.</Description>
+        <PackageTags>framework;meadow</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+        <LangVersion>13</LangVersion>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Meadow.Framework.Domain.Abstractions\Meadow.Framework.Domain.Abstractions.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.Application.Abstractions\Meadow.Framework.Application.Abstractions.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.Infrastructure.Abstractions\Meadow.Framework.Infrastructure.Abstractions.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.IntegrationEvents\Meadow.Framework.IntegrationEvents.csproj"/>
+        <ProjectReference Include="..\..\Meadow_Framework.Core\Meadow_Framework.Core.csproj"/>
+        <ProjectReference Include="..\..\Meadow.Framework.Mediator\Meadow.Framework.Mediator.csproj"/>
+        <ProjectReference Include="..\..\Meadow.Framework.Outbox\Meadow.Framework.Outbox.csproj"/>
+        <ProjectReference Include="..\..\Meadow_Framework.Exceptions\Meadow_Framework.Exceptions.csproj"/>
+    </ItemGroup>
+
+</Project>

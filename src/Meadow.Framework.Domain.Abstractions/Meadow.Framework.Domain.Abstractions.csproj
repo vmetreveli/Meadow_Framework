@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <Version>0.0.0</Version>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <PackageId>Meadow.Framework.Domain.Abstractions</PackageId>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/vmetreveli/Meadow_Framework</RepositoryUrl>
+        <Authors>vmetreveli</Authors>
+        <Company>vmetreveli</Company>
+        <Description>Pure domain concepts and abstractions for Meadow Framework - entities, aggregates, value objects, and domain events.</Description>
+        <PackageTags>framework;meadow;domain;abstractions</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+        <LangVersion>13</LangVersion>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+</Project>
