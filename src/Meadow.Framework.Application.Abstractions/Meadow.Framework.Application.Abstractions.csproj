@@ -25,4 +25,11 @@
         <ProjectReference Include="..\Meadow.Framework.Domain.Abstractions\Meadow.Framework.Domain.Abstractions.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Update="MinVer" Version="7.0.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+    </ItemGroup>
+
 </Project>
