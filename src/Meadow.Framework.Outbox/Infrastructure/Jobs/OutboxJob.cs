@@ -1,6 +1,6 @@
+using Meadow.Framework.IntegrationEvents;
 using Meadow.Framework.Outbox.Abstractions.Events;
 using Meadow.Framework.Outbox.Abstractions.Repository;
-using Meadow.Framework.IntegrationEvents;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 

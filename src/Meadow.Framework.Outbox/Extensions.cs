@@ -35,7 +35,7 @@ public static class Extensions
         Action<OutboxOptions>? configureOptions = null)
     {
         // Configure outbox options
-        var options = new OutboxOptions();
+        OutboxOptions options = new();
         configuration.GetSection("Meadow:Outbox").Bind(options);
         configureOptions?.Invoke(options);
         services.AddSingleton(options);

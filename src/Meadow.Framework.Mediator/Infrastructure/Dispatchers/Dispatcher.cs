@@ -46,5 +46,4 @@ public sealed class Dispatcher(ICommandDispatcher commandDispatcher, IQueryDispa
     {
         return queryDispatcher.QueryAsync<TResult>(query, cancellationToken);
     }
-
 }

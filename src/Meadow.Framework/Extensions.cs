@@ -1,5 +1,6 @@
-using Meadow.Framework.Infrastructure;
+using System.Reflection;
 using Meadow.Framework.Exceptions;
+using Meadow.Framework.Infrastructure;
 using Meadow.Framework.Mediator;
 using Meadow.Framework.Outbox;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,6 @@ public static class Extensions
     /// <summary>
     ///     Adds all Meadow Framework components: Core, Mediator, Outbox, and Exceptions.
     ///     This is a convenience method that registers all framework services at once.
-    ///
     ///     Note: This method registers the basic framework services. For full functionality,
     ///     you may need to register additional services like:
     ///     - DbContext with specific database provider
@@ -29,7 +29,7 @@ public static class Extensions
     public static IServiceCollection AddMeadowFramework(
         this IServiceCollection services,
         IConfiguration configuration,
-        params System.Reflection.Assembly[] assemblies)
+        params Assembly[] assemblies)
     {
         return services
             .AddMeadowInfrastructure(configuration)

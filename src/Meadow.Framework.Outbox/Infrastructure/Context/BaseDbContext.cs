@@ -1,6 +1,6 @@
 using System.Reflection;
-using Meadow.Framework.Outbox.Abstractions;
 using Meadow.Framework.IntegrationEvents;
+using Meadow.Framework.Outbox.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Meadow.Framework.Outbox.Infrastructure.Context;

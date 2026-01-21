@@ -1,6 +1,7 @@
 # Meadow Framework
 
-A modular .NET framework for building clean architecture applications with CQRS, Domain-Driven Design, and reliable messaging patterns.
+A modular .NET framework for building clean architecture applications with CQRS, Domain-Driven Design, and reliable
+messaging patterns.
 
 ## Installation
 
@@ -73,6 +74,7 @@ app.UseMeadowExceptions();
 ## Component Overview
 
 ### Meadow.Framework.Infrastructure
+
 Provides infrastructure implementations:
 
 - **Entity Framework Interceptors**: Automatic audit trails and soft deletes
@@ -88,6 +90,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 ```
 
 ### Meadow.Framework.Mediator
+
 Implements CQRS pattern with automatic handler discovery:
 
 - **Commands**: Fire-and-forget operations
@@ -103,6 +106,7 @@ builder.Services.AddMeadowMediator(
 ```
 
 ### Meadow.Framework.Outbox
+
 Reliable messaging with the outbox pattern:
 
 - **Transactional Outbox**: Messages stored with business data
@@ -120,6 +124,7 @@ builder.Services.AddMeadowOutbox(builder.Configuration, options =>
 ```
 
 ### Meadow.Framework.Exceptions
+
 Centralized error handling:
 
 - **Exception Middleware**: Automatic error response formatting

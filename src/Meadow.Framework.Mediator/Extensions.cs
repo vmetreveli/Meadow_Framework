@@ -6,8 +6,6 @@ using Meadow.Framework.Mediator.Infrastructure.Commands;
 using Meadow.Framework.Mediator.Infrastructure.Dispatchers;
 using Meadow.Framework.Mediator.Infrastructure.Events;
 using Meadow.Framework.Mediator.Infrastructure.Queries.Dispatcher;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 
 namespace Meadow.Framework.Mediator;
 
@@ -27,7 +25,7 @@ public static class Extensions
         this IServiceCollection services,
         params Assembly[] assemblies)
     {
-        foreach (var assembly in assemblies)
+        foreach (Assembly assembly in assemblies)
         {
             services.AddCommands(assembly);
             services.AddQueries(assembly);
@@ -60,7 +58,7 @@ public static class Extensions
                               || i.GetGenericTypeDefinition() == typeof(ICommandHandler<>))));
 
         // Register each command handler as scoped
-        foreach (var type in commandHandlerTypes)
+        foreach (Type type in commandHandlerTypes)
         {
             IEnumerable<Type> interfaces = type.GetInterfaces()
                 .Where(i =>
@@ -68,7 +66,7 @@ public static class Extensions
                     (i.GetGenericTypeDefinition() == typeof(ICommandHandler<>)
                      || i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)));
 
-            foreach (var interfaceType in interfaces) services.AddScoped(interfaceType, type);
+            foreach (Type interfaceType in interfaces) services.AddScoped(interfaceType, type);
         }
 
         return services;
@@ -93,7 +91,7 @@ public static class Extensions
         // Register each query handler as scoped
         foreach (Type type in queryHandlerTypes)
         {
-            var interfaces = type.GetInterfaces()
+            IEnumerable<Type> interfaces = type.GetInterfaces()
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>));
 
             foreach (Type interfaceType in interfaces) services.AddScoped(interfaceType, type);
@@ -131,7 +129,6 @@ public static class Extensions
     }
 
 
-
     /// <summary>
     ///     Finds and returns all classes that implement <see cref="IEventConsumer{TEvent}" /> from all loaded assemblies.
     /// </summary>
@@ -139,11 +136,11 @@ public static class Extensions
     /// <returns>A collection of consumer types implementing <see cref="IEventConsumer{TEvent}" />.</returns>
     private static IEnumerable<Type> FindConsumers(IEnumerable<Assembly> assemblies)
     {
-        var consumerInterfaceType = typeof(IEventConsumer<>);
-        var consumer = new List<Type>();
+        Type consumerInterfaceType = typeof(IEventConsumer<>);
+        List<Type> consumer = new();
 
         // Search for classes implementing IEventConsumer<> in loaded assemblies
-        foreach (var assembly in assemblies)
+        foreach (Assembly assembly in assemblies)
             consumer.AddRange(assembly.GetTypes()
                 .Where(type => type is { IsClass: true, IsAbstract: false })
                 .Where(type => type.GetInterfaces()
@@ -154,6 +151,4 @@ public static class Extensions
 
         return consumer;
     }
-
-
 }

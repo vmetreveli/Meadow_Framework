@@ -1,6 +1,5 @@
 using Meadow.Framework.Infrastructure.Infrastructure.Interceptors;
 using Meadow.Framework.Infrastructure.Infrastructure.Security;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -47,5 +46,4 @@ public static class Extensions
 
         return optionsBuilder;
     }
-
 }
