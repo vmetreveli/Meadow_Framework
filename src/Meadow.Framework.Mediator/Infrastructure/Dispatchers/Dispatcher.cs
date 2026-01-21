@@ -44,6 +44,7 @@ public sealed class Dispatcher(ICommandDispatcher commandDispatcher, IQueryDispa
     /// <returns>A task that represents the asynchronous operation, with a result of type <typeparamref name="TResult" />.</returns>
     public Task<TResult> QueryAsync<TResult>(IQuery<TResult> query, CancellationToken cancellationToken = default)
     {
-        return queryDispatcher.QueryAsync(query, cancellationToken);
+        return queryDispatcher.QueryAsync<TResult>(query, cancellationToken);
     }
+
 }
