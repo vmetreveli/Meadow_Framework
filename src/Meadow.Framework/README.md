@@ -14,6 +14,7 @@ dotnet add package Meadow.Framework
 dotnet add package Meadow.Framework.Domain.Abstractions
 dotnet add package Meadow.Framework.Application.Abstractions
 dotnet add package Meadow.Framework.Infrastructure.Abstractions
+dotnet add package Meadow.Framework.IntegrationEvents
 dotnet add package Meadow.Framework.Infrastructure
 dotnet add package Meadow.Framework.Mediator
 dotnet add package Meadow.Framework.Outbox
@@ -185,7 +186,7 @@ Domain Layer (Domain.Abstractions)
     ↓
 Application Layer (Application.Abstractions)
     ↓
-Infrastructure Layer (Core, Mediator, Outbox, Exceptions)
+Infrastructure Layer (Infrastructure, Mediator, Outbox, Exceptions)
 ```
 
 ## Contributing

@@ -1,4 +1,4 @@
-﻿using Meadow.Framework.Exceptions.Abstractions.Exceptions;
+using Meadow.Framework.Exceptions.Abstractions.Exceptions;
 using Meadow.Framework.Exceptions.Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Builder;
 
@@ -20,7 +20,6 @@ public static class Extensions
         services.AddErrorHandling();
         return services;
     }
-
 
     /// <summary>
     ///     Adds error handling middleware and exception handling services.
@@ -48,4 +47,14 @@ public static class Extensions
         return app.UseMiddleware<ErrorHandlerMiddleware>();
     }
 
+    /// <summary>
+    ///     Adds Meadow Framework exception handling middleware to the application pipeline.
+    ///     This is a convenience method that calls <see cref="UseErrorHandling" />.
+    /// </summary>
+    /// <param name="app">The <see cref="IApplicationBuilder" /> to add the middleware to.</param>
+    /// <returns>The modified <see cref="IApplicationBuilder" />.</returns>
+    public static IApplicationBuilder UseMeadowExceptions(this IApplicationBuilder app)
+    {
+        return app.UseErrorHandling();
+    }
 }
