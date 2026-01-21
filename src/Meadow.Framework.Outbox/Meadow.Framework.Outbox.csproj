@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+        <PackageReference Update="MinVer" Version="7.0.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Meadow.Framework.Mediator\Meadow.Framework.Mediator.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.Infrastructure\Meadow.Framework.Infrastructure.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.IntegrationEvents\Meadow.Framework.IntegrationEvents.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.Exceptions\Meadow.Framework.Exceptions.csproj"/>
+    </ItemGroup>
+
+</Project>

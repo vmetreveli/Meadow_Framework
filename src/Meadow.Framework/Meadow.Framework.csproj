@@ -26,10 +26,11 @@
         <ProjectReference Include="..\Meadow.Framework.Application.Abstractions\Meadow.Framework.Application.Abstractions.csproj"/>
         <ProjectReference Include="..\Meadow.Framework.Infrastructure.Abstractions\Meadow.Framework.Infrastructure.Abstractions.csproj"/>
         <ProjectReference Include="..\Meadow.Framework.IntegrationEvents\Meadow.Framework.IntegrationEvents.csproj"/>
-        <ProjectReference Include="..\..\Meadow_Framework.Core\Meadow_Framework.Core.csproj"/>
-        <ProjectReference Include="..\..\Meadow.Framework.Mediator\Meadow.Framework.Mediator.csproj"/>
-        <ProjectReference Include="..\..\Meadow.Framework.Outbox\Meadow.Framework.Outbox.csproj"/>
-        <ProjectReference Include="..\..\Meadow_Framework.Exceptions\Meadow_Framework.Exceptions.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.Infrastructure\Meadow.Framework.Infrastructure.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.Mediator\Meadow.Framework.Mediator.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.Outbox\Meadow.Framework.Outbox.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.Exceptions\Meadow.Framework.Exceptions.csproj"/>
+        <ProjectReference Include="..\Meadow.Framework.Analyzer\Meadow.Framework.Analyzer.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -1,4 +1,4 @@
-namespace Meadow.Framework.Domain.Abstractions.Events;
+﻿namespace Meadow.Framework.Domain.Abstractions.Events;
 
 /// <summary>
 ///     Marker interface for domain events.
@@ -11,4 +11,7 @@ namespace Meadow.Framework.Domain.Abstractions.Events;
 /// </remarks>
 public interface IDomainEvent : IEvent
 {
+    // This interface does not define any additional members. It serves as a
+    // marker interface to identify domain events, which are a subset of events
+    // that are specifically related to changes or operations within the domain.
 }
