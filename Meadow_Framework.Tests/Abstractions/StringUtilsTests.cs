@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meadow_Framework.Core.Abstractions;
+using Meadow.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 

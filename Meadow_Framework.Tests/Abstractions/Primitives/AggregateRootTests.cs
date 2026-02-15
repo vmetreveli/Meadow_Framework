@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meadow_Framework.Core.Abstractions.Events;
-using Meadow_Framework.Core.Abstractions.Primitives;
+using Meadow.Abstractions.Events;
+using Meadow.Abstractions.Primitives;
 using Moq;
 using Xunit;
 

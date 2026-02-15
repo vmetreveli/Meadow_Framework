@@ -1,6 +1,6 @@
 using FluentAssertions;
 using FluentValidation.Results;
-using Meadow_Framework.Core.Abstractions.Exceptions;
+using Meadow.Abstractions.Exceptions;
 using Microsoft.Extensions.Logging;
 using Xunit;
 

@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Meadow_Framework.Core.Abstractions.Primitives;
-using Meadow_Framework.Core.Abstractions.Specifications;
-using Meadow_Framework.Core.Infrastructure.Repository;
+using Meadow.Abstractions.Primitives;
+using Meadow.Abstractions.Specifications;
+using Meadow.EntityFrameworkCore.Repository;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 

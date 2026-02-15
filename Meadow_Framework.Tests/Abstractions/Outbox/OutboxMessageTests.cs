@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Meadow_Framework.Core.Abstractions.Outbox;
+using Meadow.Abstractions.Outbox;
 using Xunit;
 
 namespace Meadow_Framework.Tests.Abstractions.Outbox;

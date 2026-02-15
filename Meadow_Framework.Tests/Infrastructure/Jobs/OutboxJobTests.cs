@@ -1,8 +1,8 @@
-using Meadow_Framework.Core.Abstractions.Events;
-using Meadow_Framework.Core.Abstractions.Outbox;
-using Meadow_Framework.Core.Abstractions.Primitives;
-using Meadow_Framework.Core.Abstractions.Repository;
-using Meadow_Framework.Core.Infrastructure.Jobs;
+using Meadow.Abstractions.Events;
+using Meadow.Abstractions.Outbox;
+using Meadow.Abstractions.Primitives;
+using Meadow.Abstractions.Repository;
+using Meadow.MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Quartz;
