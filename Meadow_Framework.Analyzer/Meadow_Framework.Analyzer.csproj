@@ -21,7 +21,7 @@
 
         <!-- CodeFix / Workspaces APIs -->
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" PrivateAssets="all" />
-        <PackageReference Include="System.Composition" Version="10.0.2" PrivateAssets="all" />
+        <PackageReference Include="System.Composition" Version="10.0.3" PrivateAssets="all" />
         <PackageReference Update="MinVer" Version="7.0.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
