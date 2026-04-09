@@ -31,6 +31,17 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
+    ///     Registers tracing and metrics for the Meadow framework.
+    ///     OpenTelemetry should be configured alongside this call by the consuming application.
+    /// </summary>
+    public static IServiceCollection AddMeadowInstrumentation(this IServiceCollection services)
+    {
+        // Place for future metrics/tracing DI registration if needed.
+        // Currently ActivitySource and Meter are static and initialized inherently.
+        return services;
+    }
+
     private static IServiceCollection AddCommands(this IServiceCollection services, Assembly assembly)
     {
         services.AddScoped<ICommandDispatcher, CommandDispatcher>();

@@ -1,4 +1,6 @@
-﻿using Meadow.Abstractions.Queries;
+﻿using System.Diagnostics;
+using Meadow.Abstractions.Diagnostics;
+using Meadow.Abstractions.Queries;
 
 namespace Meadow.Core.Queries;
 
@@ -18,6 +20,9 @@ public sealed class QueryDispatcher(IServiceProvider serviceProvider) : IQueryDi
     public async Task<TResult> QueryAsync<TResult>(IQuery<TResult> query,
         CancellationToken cancellationToken = default)
     {
+        // Creates a new trace activity for handling this query
+        using var activity = MeadowDiagnostics.ActivitySource.StartActivity($"Query {query.GetType().Name}");
+
         // Create a scope for resolving dependencies.
         using var scope = serviceProvider.CreateScope();
 

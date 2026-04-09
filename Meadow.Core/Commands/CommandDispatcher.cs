@@ -1,4 +1,6 @@
-﻿using Meadow.Abstractions.Commands;
+﻿using System.Diagnostics;
+using Meadow.Abstractions.Commands;
+using Meadow.Abstractions.Diagnostics;
 
 namespace Meadow.Core.Commands;
 
@@ -19,6 +21,9 @@ public sealed class CommandDispatcher(IServiceProvider serviceProvider) : IComma
     public async Task SendAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default)
         where TCommand : class, ICommand
     {
+        // Creates a new trace activity for handling this command
+        using var activity = MeadowDiagnostics.ActivitySource.StartActivity($"Command {command.GetType().Name}");
+
         // Creates a new dependency injection scope to resolve the command handler
         using var scope = serviceProvider.CreateScope();
 
@@ -41,6 +46,9 @@ public sealed class CommandDispatcher(IServiceProvider serviceProvider) : IComma
     public async Task<TResult> SendAsync<TResult>(ICommand<TResult> command,
         CancellationToken cancellationToken = default)
     {
+        // Creates a new trace activity for handling this command
+        using var activity = MeadowDiagnostics.ActivitySource.StartActivity($"Command {command.GetType().Name}");
+
         // Creates a new dependency injection scope to resolve the command handler
         using var scope = serviceProvider.CreateScope();
 

@@ -1,4 +1,6 @@
-﻿using Meadow.Abstractions.Events;
+﻿using System.Diagnostics;
+using Meadow.Abstractions.Diagnostics;
+using Meadow.Abstractions.Events;
 using Meadow.Abstractions.Repository;
 using Quartz;
 
@@ -21,6 +23,9 @@ public class OutboxJob(
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task Execute(IJobExecutionContext context)
     {
+        // Trace the entire outbox processing cycle
+        using var activity = MeadowDiagnostics.ActivitySource.StartActivity("OutboxProcessor Execute");
+
         // Create a scope for resolving dependencies (outbox repository).
         using var scope = serviceProvider.CreateScope();
 
@@ -32,7 +37,11 @@ public class OutboxJob(
 
         // Recreate the integration event from each outbox message and publish it using the event dispatcher.
         foreach (var eventMessage in readyToSendItems.Select(item => item.RecreateMessage()))
+        {
+            // Trace the publication of individual events
+            using var publishActivity = MeadowDiagnostics.ActivitySource.StartActivity($"PublishIntegrationEvent {eventMessage.GetType().Name}");
             // Publish the recreated integration event asynchronously.
             await messagePublisher.PublishIntegrationEventAsync(eventMessage);
+        }
     }
 }
