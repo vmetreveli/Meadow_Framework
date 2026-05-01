@@ -29,7 +29,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.7" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
         <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
-        <PackageReference Include="Quartz.Extensions.Hosting" Version="3.18.0" />
+        <PackageReference Include="Quartz.Extensions.Hosting" Version="3.18.1" />
         <PackageReference Include="FluentValidation" Version="12.1.1" />
         <PackageReference Include="MassTransit" Version="9.1.0" />
         <PackageReference Include="MassTransit.RabbitMQ" Version="9.1.0" />
