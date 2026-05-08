@@ -17,7 +17,7 @@
         <PackageTags>framework;meadow;library</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
-        <LangVersion>13</LangVersion>
+        <LangVersion>14</LangVersion>
         <PackageIcon>4518763_framework_phoenix_icon.png</PackageIcon>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
@@ -33,10 +33,6 @@
         <PackageReference Include="FluentValidation" Version="12.1.1" />
         <PackageReference Include="MassTransit" Version="9.1.0" />
         <PackageReference Include="MassTransit.RabbitMQ" Version="9.1.0" />
-        <PackageReference Update="MinVer" Version="7.0.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
