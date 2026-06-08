@@ -28,26 +28,41 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
     ///     Asynchronously gets an entity by its identifier.
     /// </summary>
     /// <param name="id">The identifier of the entity to retrieve.</param>
+    /// <param name="asNoTracking">Whether to retrieve the entity without tracking it in the context.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>The entity if found; otherwise, null.</returns>
-    public virtual async Task<TEntity?> GetByIdAsync(TId id, CancellationToken cancellationToken = default)
+    public virtual async Task<TEntity?> GetByIdAsync(TId id, bool asNoTracking = true, CancellationToken cancellationToken = default)
     {
-        return await context
-            .Set<TEntity>()
-            .FindAsync([id], cancellationToken);
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query.FirstOrDefaultAsync(
+            e => EqualityComparer<TId>.Default.Equals(e.Id, id),
+            cancellationToken);
     }
 
     /// <summary>
     ///     Asynchronously retrieves the first entity matching the given predicate.
     /// </summary>
     /// <param name="predicate">The predicate to filter entities.</param>
+    /// <param name="asNoTracking"></param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>The first entity that matches the predicate; otherwise, null.</returns>
     public virtual async Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate,
+        bool asNoTracking = true,
         CancellationToken cancellationToken = default)
     {
-        return await context
-            .Set<TEntity>()
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+        return await query
             .FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
@@ -57,8 +72,9 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
     /// <param name="specification">The specification to filter entities.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>The first entity that satisfies the specification; otherwise, null.</returns>
-    public async Task<TEntity?> FirstOrDefaultAsync(Specification<TEntity, TId> specification,
-        CancellationToken cancellationToken = default)
+    public async Task<TEntity?> FirstOrDefaultAsync(
+        Specification<TEntity, TId> specification,
+       CancellationToken cancellationToken = default)
     {
         return await ApplySpecification(specification)
             .FirstOrDefaultAsync(cancellationToken);
@@ -68,10 +84,15 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
     ///     Asynchronously retrieves all entities from the database.
     /// </summary>
     /// <returns>An asynchronous stream of entities.</returns>
-    public virtual IAsyncEnumerable<TEntity> GetAllAsync()
+    public virtual IAsyncEnumerable<TEntity> GetAllAsync(bool asNoTracking = true)
     {
-        return context
-            .Set<TEntity>()
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+        return query
             .AsAsyncEnumerable();
     }
 
@@ -80,10 +101,18 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
     /// </summary>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A list of entities.</returns>
-    public virtual async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
+    public virtual async Task<IEnumerable<TEntity>> GetAllAsync(
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
     {
-        return await context
-            .Set<TEntity>()
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query
             .ToListAsync(cancellationToken);
     }
 
@@ -92,13 +121,22 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
     /// </summary>
     /// <param name="predicate">The predicate to filter entities.</param>
     /// <returns>An asynchronous stream of entities.</returns>
-    public virtual IAsyncEnumerable<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate)
+    public virtual IAsyncEnumerable<TEntity> FindAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        bool asNoTracking = true)
     {
-        return context
-            .Set<TEntity>()
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return query
             .Where(predicate)
             .AsAsyncEnumerable();
     }
+
 
     /// <summary>
     ///     Asynchronously finds entities that satisfy the specification.
@@ -117,11 +155,18 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
     /// <param name="predicate">The predicate to filter entities.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A list of entities.</returns>
-    public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
-        CancellationToken cancellationToken)
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken =  default)
     {
-        return await context
-            .Set<TEntity>()
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+        return await query
             .Where(predicate)
             .ToListAsync(cancellationToken);
     }
@@ -132,8 +177,9 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
     /// <param name="specification">The specification to filter entities.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A list of entities.</returns>
-    public async Task<IEnumerable<TEntity>> FindAsync(Specification<TEntity, TId> specification,
-        CancellationToken cancellationToken)
+    public async Task<IEnumerable<TEntity>> FindAsync(
+        Specification<TEntity, TId> specification,
+        CancellationToken cancellationToken = default)
     {
         return await ApplySpecification(specification)
             .ToListAsync(cancellationToken);
@@ -221,9 +267,13 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
     /// <param name="pageSize">The size of each page.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A tuple containing the list of entities and total count.</returns>
-    public async Task<(List<TEntity> entity, long TotalCount)> GetPaginatedAsync(int pageIndex, int pageSize,
-        CancellationToken cancellationToken)
+    public async Task<(List<TEntity> entity, long TotalCount)> GetPaginatedAsync(
+        int pageIndex,
+        int pageSize,
+        CancellationToken cancellationToken = default)
     {
+        IQueryable<TEntity> query = context.Set<TEntity>();
+
         var totalCount = context.Set<TEntity>().LongCountAsync(cancellationToken);
 
         var entities = await context

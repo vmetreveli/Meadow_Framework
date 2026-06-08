@@ -16,11 +16,12 @@ public static class SpecificationEvaluator
     /// <param name="specification">The specification containing criteria, includes, ordering, and tracking information.</param>
     /// <returns>An <see cref="IQueryable{TEntity}" /> that reflects the applied specification.</returns>
     public static IQueryable<TEntity> GetQuery<TEntity, TId>(
-        IQueryable<TEntity> inputQueryable, Specification<TEntity, TId> specification)
+        IQueryable<TEntity> inputQueryable,
+        Specification<TEntity, TId> specification)
         where TEntity : EntityBase<TId>
         where TId : notnull
     {
-        var queryable = inputQueryable;
+        IQueryable<TEntity> queryable = inputQueryable;
 
         // Apply the criteria (filter) if it is not null
         if (specification.Criteria is not null)

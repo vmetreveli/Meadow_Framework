@@ -17,17 +17,20 @@ public interface IRepositoryBase<TEntity, TId>
     ///     Asynchronously retrieves an entity by its identifier.
     /// </summary>
     /// <param name="id">The identifier of the entity to retrieve.</param>
+    /// <param name="asNoTracking">Indicates whether to retrieve the entity without tracking it in the context.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A task representing the asynchronous operation, with a result of the entity or null if not found.</returns>
-    Task<TEntity?> GetByIdAsync(TId id, CancellationToken cancellationToken = default);
+    Task<TEntity?> GetByIdAsync(TId id, bool asNoTracking = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Asynchronously retrieves the first entity that matches the specified predicate.
     /// </summary>
     /// <param name="predicate">An expression that defines the criteria to filter entities.</param>
+    /// <param name="asNoTracking">Indicates whether to retrieve the entity without tracking it in the context.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A task representing the asynchronous operation, with a result of the entity or null if not found.</returns>
     Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate,
+        bool asNoTracking = true,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -36,33 +39,35 @@ public interface IRepositoryBase<TEntity, TId>
     /// <param name="specification">A specification defining the criteria to filter entities.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A task representing the asynchronous operation, with a result of the entity or null if not found.</returns>
-    Task<TEntity?> FirstOrDefaultAsync(Specification<TEntity, TId> specification,
+    Task<TEntity?> FirstOrDefaultAsync(
+        Specification<TEntity, TId> specification,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Retrieves all entities asynchronously.
     /// </summary>
     /// <returns>An asynchronous sequence of all entities.</returns>
-    IAsyncEnumerable<TEntity> GetAllAsync();
+    IAsyncEnumerable<TEntity> GetAllAsync(bool asNoTracking = true);
 
     /// <summary>
     ///     Asynchronously retrieves all entities.
     /// </summary>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A task representing the asynchronous operation, with a result of a list of all entities.</returns>
-    Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken);
+    Task<IEnumerable<TEntity>> GetAllAsync(bool asNoTracking = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Retrieves entities that match the specified predicate asynchronously.
     /// </summary>
     /// <param name="predicate">An expression that defines the criteria to filter entities.</param>
     /// <returns>An asynchronous sequence of entities that match the predicate.</returns>
-    IAsyncEnumerable<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate);
+    IAsyncEnumerable<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate, bool asNoTracking = true);
 
     /// <summary>
     ///     Retrieves entities that match the specified specification asynchronously.
     /// </summary>
     /// <param name="specification">A specification defining the criteria to filter entities.</param>
+    /// <param name="asNoTracking">Indicates whether to retrieve the entities without tracking them in the context.</param>
     /// <returns>An asynchronous sequence of entities that match the specification.</returns>
     IAsyncEnumerable<TEntity> FindAsync(Specification<TEntity, TId> specification);
 
@@ -72,8 +77,10 @@ public interface IRepositoryBase<TEntity, TId>
     /// <param name="predicate">An expression that defines the criteria to filter entities.</param>
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>A task representing the asynchronous operation, with a result of a list of entities that match the predicate.</returns>
-    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
-        CancellationToken cancellationToken);
+    Task<IEnumerable<TEntity>> FindAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Asynchronously retrieves entities that match the specified specification.
@@ -84,8 +91,9 @@ public interface IRepositoryBase<TEntity, TId>
     ///     A task representing the asynchronous operation, with a result of a list of entities that match the
     ///     specification.
     /// </returns>
-    Task<IEnumerable<TEntity>> FindAsync(Specification<TEntity, TId> specification,
-        CancellationToken cancellationToken);
+    Task<IEnumerable<TEntity>> FindAsync(
+        Specification<TEntity, TId> specification,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Asynchronously checks if an entity with the specified identifier exists.
@@ -145,5 +153,5 @@ public interface IRepositoryBase<TEntity, TId>
     public Task<(List<TEntity> entity, long TotalCount)> GetPaginatedAsync(
         int pageIndex,
         int pageSize,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken = default);
 }
