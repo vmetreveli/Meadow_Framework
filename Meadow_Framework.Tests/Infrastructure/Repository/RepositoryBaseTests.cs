@@ -83,7 +83,7 @@ public class RepositoryBaseTests
         await context.SaveChangesAsync();
 
         // Act
-        var result = await repository.GetByIdAsync(entity.Id);
+        var result = await repository.GetByIdAsync(entity.Id, false);
 
         // Assert
         result.Should().Be(entity);
