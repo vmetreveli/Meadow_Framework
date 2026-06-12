@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Quartz;
 using System.Text.Json.Serialization.Metadata;
+using Meadow_Framework.Core.Abstractions;
 using Meadow_Framework.Core.Abstractions.Commands;
 using Meadow_Framework.Core.Abstractions.Dispatchers;
 using Meadow_Framework.Core.Abstractions.Events;
@@ -44,6 +45,7 @@ public static class Extensions
     {
         foreach (var assembly in assemblies)
         {
+            services.AddDbContext(assembly);
             services.AddCommands(assembly);
             services.AddQueries(assembly);
             if (needEvents)
@@ -371,5 +373,26 @@ public static class Extensions
             .ForJob(jobKey)
             .WithIdentity(jobName + "-trigger")
             .WithCronSchedule(cronSchedule));
+    }
+
+    private static IServiceCollection AddDbContext(this IServiceCollection services, Assembly assembly)
+    {
+        services.AddScoped<IDbContext, BaseDbContext>();
+
+        // Get all types implementing IEventHandler<>
+        IEnumerable<Type> eventHandlerTypes = assembly.GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false } && t.GetInterfaces()
+                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDbContext)));
+
+        // Register each event handler as scoped
+        foreach (Type type in eventHandlerTypes)
+        {
+            IEnumerable<Type> interfaces = type.GetInterfaces()
+                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDbContext));
+
+            foreach (Type interfaceType in interfaces) services.AddScoped(interfaceType, type);
+        }
+
+        return services;
     }
 }

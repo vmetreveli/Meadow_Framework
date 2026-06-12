@@ -4,6 +4,9 @@ using Outbox_OutboxMessage = Meadow_Framework.Core.Abstractions.Outbox.OutboxMes
 
 namespace Meadow_Framework.Core.Infrastructure.Interceptors;
 
+/// <summary>
+///    Interceptor that converts domain events from aggregate roots into outbox messages before saving changes to the database.
+/// </summary>
 public sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
 {
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
@@ -12,7 +15,7 @@ public sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
         if (eventData.Context is not null)
         {
             _ = ConvertDomainEventsToOutboxMessages(eventData.Context);
-            _ = ConvertDomainEventsToOutboxMessages(eventData.Context);
+           // _ = ConvertDomainEventsToOutboxMessages(eventData.Context);
         }
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);
