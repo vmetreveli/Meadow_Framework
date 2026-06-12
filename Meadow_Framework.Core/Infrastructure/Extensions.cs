@@ -64,7 +64,7 @@ public static class Extensions
 
         if (needEvents)
         {
-            services.AddScoped<IOutboxRepository, OutboxRepository>();
+            services.AddScoped<IOutboxRepository, OutboxRepository<BaseDbContext>>();
 
             // Configure the database context with PostgreSQL settings
             services

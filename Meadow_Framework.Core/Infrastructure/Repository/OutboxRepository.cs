@@ -12,11 +12,15 @@ namespace Meadow_Framework.Core.Infrastructure.Repository;
 
 /// <summary>
 ///     Repository implementation for handling <see cref="OutboxMessage" /> operations in the context of an outbox pattern.
-///     Extends the base <see cref="Repository{TDbContext, TEntity, TId}" /> class to work with
+///     Extends the base <see cref="BaseRepository{TEntity}" /> to provide specific functionality for outbox messages.
+///         <cref>Repository{TDbContext, TEntity, TId}</cref>
+///     </see>
+///     class to work with
 ///     <see cref="OutboxMessage" />.
 /// </summary>
-public class OutboxRepository(BaseDbContext context)
-    : RepositoryBase<BaseDbContext, Outbox_OutboxMessage, Guid>(context), IOutboxRepository
+public class OutboxRepository<TDbContext>(TDbContext context)
+    : RepositoryBase<TDbContext, Outbox_OutboxMessage, Guid>(context), IOutboxRepository
+    where TDbContext : BaseDbContext
 {
     /// <summary>
     ///     Creates a new outbox message if a message with the same <see cref="OutboxMessage.EventId" /> doesn't already exist.
@@ -25,8 +29,7 @@ public class OutboxRepository(BaseDbContext context)
     public async void CreateOutboxMessage(Outbox_OutboxMessage outboxMessage)
     {
         // Check if an outbox message with the same EventId already exists
-        var message = await context
-            .OutboxMessages
+        var message = await context.OutboxMessages
             .FirstOrDefaultAsync(x =>
                 x.EventId == outboxMessage.EventId);
 
