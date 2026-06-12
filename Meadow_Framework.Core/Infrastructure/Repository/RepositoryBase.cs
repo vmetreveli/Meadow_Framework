@@ -40,8 +40,9 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
             query = query.AsNoTracking();
         }
 
+        // FIXED: Use .Equals() directly on the property
         return await query.FirstOrDefaultAsync(
-            e => EqualityComparer<TId>.Default.Equals(e.Id, id),
+            e => e.Id.Equals(id),
             cancellationToken);
     }
 
