@@ -37,15 +37,21 @@ public static class Extensions
     /// <param name="needEvents">A boolean indicating whether event handling services should be registered. Default is true.</param>
     /// <param name="assemblies">The assemblies to scan for handlers (commands, queries, events).</param>
     /// <returns>The modified <see cref="IServiceCollection" />.</returns>
-    public static IServiceCollection AddFramework(
+    // public static IServiceCollection AddFramework(
+    //     this IServiceCollection services,
+    //     IConfiguration configuration,
+    //     bool needEvents = true,
+    //     params Assembly[] assemblies)
+    // {
+    public static IServiceCollection AddFramework<TDbContext>(
         this IServiceCollection services,
         IConfiguration configuration,
         bool needEvents = true,
         params Assembly[] assemblies)
+        where TDbContext : BaseDbContext
     {
         foreach (var assembly in assemblies)
         {
-            services.AddDbContext(assembly);
             services.AddCommands(assembly);
             services.AddQueries(assembly);
             if (needEvents)
@@ -64,18 +70,16 @@ public static class Extensions
 
         if (needEvents)
         {
-            services.AddScoped<IOutboxRepository, OutboxRepository<BaseDbContext>>();
+            services.AddDbContext<TDbContext>((sp, options) =>
+            {
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                    .UseSnakeCaseNamingConvention()
+                    .EnableSensitiveDataLogging()
+                    .EnableDetailedErrors();
+            });
 
-            // Configure the database context with PostgreSQL settings
-            services
-                .AddDbContext<BaseDbContext>((sp, options) =>
-                {
-                    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                        .UseSnakeCaseNamingConvention()
-                        .EnableSensitiveDataLogging()
-                        .EnableDetailedErrors();
-                });
-            services.AddScoped<IUnitOfWork, UnitOfWork<BaseDbContext>>();
+            services.AddScoped<IOutboxRepository, OutboxRepository<TDbContext>>();
+            // services.AddScoped<IUnitOfWork, UnitOfWork<TDbContext>>();
         }
 
         return services;
@@ -375,24 +379,4 @@ public static class Extensions
             .WithCronSchedule(cronSchedule));
     }
 
-    private static IServiceCollection AddDbContext(this IServiceCollection services, Assembly assembly)
-    {
-        services.AddScoped<IDbContext, BaseDbContext>();
-
-        // Get all types implementing IEventHandler<>
-        IEnumerable<Type> eventHandlerTypes = assembly.GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false } && t.GetInterfaces()
-                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDbContext)));
-
-        // Register each event handler as scoped
-        foreach (Type type in eventHandlerTypes)
-        {
-            IEnumerable<Type> interfaces = type.GetInterfaces()
-                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDbContext));
-
-            foreach (Type interfaceType in interfaces) services.AddScoped(interfaceType, type);
-        }
-
-        return services;
-    }
 }
