@@ -37,19 +37,13 @@ public static class Extensions
     /// <param name="needEvents">A boolean indicating whether event handling services should be registered. Default is true.</param>
     /// <param name="assemblies">The assemblies to scan for handlers (commands, queries, events).</param>
     /// <returns>The modified <see cref="IServiceCollection" />.</returns>
-    // public static IServiceCollection AddFramework(
-    //     this IServiceCollection services,
-    //     IConfiguration configuration,
-    //     bool needEvents = true,
-    //     params Assembly[] assemblies)
-    // {
-    public static IServiceCollection AddFramework<TDbContext>(
+    public static IServiceCollection AddFramework(
         this IServiceCollection services,
         IConfiguration configuration,
         bool needEvents = true,
         params Assembly[] assemblies)
-        where TDbContext : BaseDbContext
     {
+
         foreach (var assembly in assemblies)
         {
             services.AddCommands(assembly);
@@ -62,24 +56,42 @@ public static class Extensions
 
         if (needEvents)
         {
-            services.AddEventBus(configuration, assemblies); 
+            services.AddEventBus(configuration, assemblies);
         }
-      
+
         services.AddScoped<IDispatcher, Dispatcher>();
         services.AddErrorHandling();
 
         if (needEvents)
         {
-            services.AddDbContext<TDbContext>((sp, options) =>
+            IEnumerable<Type> dbContextTypes = FindDbContexts();
+            foreach (Type dbContextType in dbContextTypes)
             {
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                    .UseSnakeCaseNamingConvention()
-                    .EnableSensitiveDataLogging()
-                    .EnableDetailedErrors();
-            });
 
-            services.AddScoped<IOutboxRepository, OutboxRepository<TDbContext>>();
-            // services.AddScoped<IUnitOfWork, UnitOfWork<TDbContext>>();
+                MethodInfo addDbContextMethod = typeof(EntityFrameworkServiceCollectionExtensions)
+                    .GetMethods()
+                    .First(m => m.Name == nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext)
+                                && m.IsGenericMethod
+                                && m.GetParameters().Length == 2
+                                && m.GetParameters()[1].ParameterType.IsGenericType
+                                && m.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(Action<,>))
+                    .MakeGenericMethod(dbContextType);
+
+                Action<IServiceProvider, DbContextOptionsBuilder> configureOptions = (sp, options) =>
+                {
+                    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                        .UseSnakeCaseNamingConvention()
+                        .EnableSensitiveDataLogging()
+                        .EnableDetailedErrors();
+                };
+
+                addDbContextMethod.Invoke(null,
+                    [services, configureOptions, ServiceLifetime.Scoped, ServiceLifetime.Scoped]);
+
+
+            }
+
+            services.AddScoped<IOutboxRepository, OutboxRepository<BaseDbContext>>();
         }
 
         return services;
@@ -377,6 +389,22 @@ public static class Extensions
             .ForJob(jobKey)
             .WithIdentity(jobName + "-trigger")
             .WithCronSchedule(cronSchedule));
+    }
+
+
+    private static IEnumerable<Type> FindDbContexts()
+    {
+        // IDbContext is used to identify relevant DbContext types
+        Type dbContextInterface = typeof(IDbContext);
+        Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+        // Retrieve all classes that implement IDbContext and are DbContext
+        var dbContexts = assemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => !type.IsAbstract && typeof(DbContext).IsAssignableFrom(type))
+            .Where(type => type.GetInterfaces().Contains(dbContextInterface));
+
+        return dbContexts;
     }
 
 }

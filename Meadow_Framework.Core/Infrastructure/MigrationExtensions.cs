@@ -18,13 +18,13 @@ public static class MigrationExtensions
     {
         // Create a scope to retrieve services
         using var scope = app.Services.CreateScope();
-        var services = scope.ServiceProvider;
+        IServiceProvider services = scope.ServiceProvider;
         var logger = services.GetRequiredService<ILogger<MigrationExtensionsLogger>>();
 
         // Find all DbContext types implementing IDbContext
-        var dbContextTypes = FindDbContexts();
+        IEnumerable<Type> dbContextTypes = FindDbContexts();
 
-        foreach (var dbContextType in dbContextTypes)
+        foreach (Type dbContextType in dbContextTypes)
         {
             try
             {
@@ -36,7 +36,7 @@ public static class MigrationExtensions
 
                 if (context.Database.IsNpgsql())
                 {
-                    var pendingMigrations =  context.Database.GetPendingMigrations();
+                    IEnumerable<string> pendingMigrations =  context.Database.GetPendingMigrations();
                     if (pendingMigrations.Any())
                     {
                          context.Database.Migrate();
