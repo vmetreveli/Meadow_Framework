@@ -14,7 +14,7 @@ public static class MigrationExtensions
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>
-    public static  WebApplication ApplyMigration(this WebApplication app)
+    public static  WebApplication ApplyMigration(this WebApplication app,IEnumerable<Assembly> assemblies)
     {
         // Create a scope to retrieve services
         using var scope = app.Services.CreateScope();
@@ -22,7 +22,7 @@ public static class MigrationExtensions
         var logger = services.GetRequiredService<ILogger<MigrationExtensionsLogger>>();
 
         // Find all DbContext types implementing IDbContext
-        IEnumerable<Type> dbContextTypes = FindDbContexts();
+        IEnumerable<Type> dbContextTypes = FindDbContexts(assemblies);
 
         foreach (Type dbContextType in dbContextTypes)
         {
@@ -55,11 +55,10 @@ public static class MigrationExtensions
         return app;
     }
 
-    private static IEnumerable<Type> FindDbContexts()
+    private static IEnumerable<Type> FindDbContexts(IEnumerable<Assembly> assemblies)
     {
         // IDbContext is used to identify relevant DbContext types
         Type dbContextInterface = typeof(IDbContext);
-        Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
         // Retrieve all classes that implement IDbContext and are DbContext
         var dbContexts = assemblies
