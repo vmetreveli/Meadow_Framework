@@ -64,7 +64,7 @@ public static class Extensions
 
         if (needEvents)
         {
-            IEnumerable<Type> dbContextTypes = FindDbContexts();
+            IEnumerable<Type> dbContextTypes = FindDbContexts(assemblies);
             foreach (Type dbContextType in dbContextTypes)
             {
 
@@ -392,11 +392,10 @@ public static class Extensions
     }
 
 
-    private static IEnumerable<Type> FindDbContexts()
+    private static IEnumerable<Type> FindDbContexts(IEnumerable<Assembly> assemblies)
     {
         // IDbContext is used to identify relevant DbContext types
         Type dbContextInterface = typeof(IDbContext);
-        Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
         // Retrieve all classes that implement IDbContext and are DbContext
         var dbContexts = assemblies
