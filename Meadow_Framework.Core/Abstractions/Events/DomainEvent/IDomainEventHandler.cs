@@ -1,6 +1,4 @@
-﻿using Meadow_Framework.Core.Abstractions.Events;
-
-namespace Meadow_Framework.Core.Abstractions.Kernel;
+﻿namespace Meadow_Framework.Core.Abstractions.Events.DomainEvent;
 
 /// <summary>
 ///     Defines a handler for processing domain events of type <typeparamref name="TEvent" />.

@@ -1,54 +1,52 @@
-using Meadow_Framework.Core.Abstractions;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Meadow_Framework.Core.Abstractions;
 
 namespace Meadow_Framework.Core.Infrastructure;
 
 /// <summary>
-///
+/// Extension methods for applying database migrations at application startup.
 /// </summary>
 public static class MigrationExtensions
 {
     /// <summary>
-    ///
+    /// Applies database migrations at application startup.
     /// </summary>
     /// <param name="app"></param>
+    /// <param name="assemblies"></param>
     /// <returns></returns>
-    public static  WebApplication ApplyMigration(this WebApplication app,IEnumerable<Assembly> assemblies)
+    public static WebApplication ApplyMigration(this WebApplication app, IEnumerable<Assembly> assemblies)
     {
-        // Create a scope to retrieve services
         using var scope = app.Services.CreateScope();
-        IServiceProvider services = scope.ServiceProvider;
+        var services = scope.ServiceProvider;
+
         var logger = services.GetRequiredService<ILogger<MigrationExtensionsLogger>>();
 
-        // Find all DbContext types implementing IDbContext
-        IEnumerable<Type> dbContextTypes = FindDbContexts(assemblies);
+        var dbContextTypes = FindDbContexts(assemblies);
 
-        foreach (Type dbContextType in dbContextTypes)
+        foreach (var dbContextType in dbContextTypes)
         {
             try
             {
-                logger.LogInformation("Starting migration for {DbContextName}...", dbContextType.Name);
+                logger.LogInformation("Starting migration for {DbContextName}", dbContextType.Name);
 
-                // Resolve the DbContext and apply migrations
-
-                DbContext context = (DbContext)services.GetRequiredService(dbContextType);
-
-                if (context.Database.IsNpgsql())
+                if (services.GetService(dbContextType) is not DbContext context)
                 {
-                    IEnumerable<string> pendingMigrations =  context.Database.GetPendingMigrations();
-                    if (pendingMigrations.Any())
-                    {
-                         context.Database.Migrate();
-                    }
+                    logger.LogWarning("DbContext not registered: {DbContextName}", dbContextType.Name);
+                    continue;
                 }
 
-                logger.LogInformation("Migration completed for {DbContextName}.", dbContextType.Name);
+                context.Database.Migrate();
+
+                logger.LogInformation("Migration completed for {DbContextName}", dbContextType.Name);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred while migrating the database for {DbContextName}.",
-                    dbContextType.Name);
+                logger.LogError(ex,
+                    "Migration failed for {DbContextName}", dbContextType.FullName);
             }
         }
 
@@ -57,22 +55,13 @@ public static class MigrationExtensions
 
     private static IEnumerable<Type> FindDbContexts(IEnumerable<Assembly> assemblies)
     {
-        // IDbContext is used to identify relevant DbContext types
-        Type dbContextInterface = typeof(IDbContext);
-
-        // Retrieve all classes that implement IDbContext and are DbContext
-        var dbContexts = assemblies
-            .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => !type.IsAbstract && typeof(DbContext).IsAssignableFrom(type))
-            .Where(type => type.GetInterfaces().Contains(dbContextInterface));
-
-        return dbContexts;
+        return assemblies
+            .SelectMany(a => a.GetTypes())
+            .Where(t =>
+                !t.IsAbstract &&
+                typeof(DbContext).IsAssignableFrom(t) &&
+                typeof(IDbContext).IsAssignableFrom(t));
     }
 }
 
-/// <summary>
-///
-/// </summary>
-public class MigrationExtensionsLogger
-{
-}
+public class MigrationExtensionsLogger { }

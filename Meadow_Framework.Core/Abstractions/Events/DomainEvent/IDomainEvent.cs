@@ -1,4 +1,4 @@
-﻿namespace Meadow_Framework.Core.Abstractions.Events;
+﻿namespace Meadow_Framework.Core.Abstractions.Events.DomainEvent;
 
 /// <summary>
 ///     Marker interface for domain events.

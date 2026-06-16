@@ -1,4 +1,5 @@
 using Meadow_Framework.Core.Abstractions.Events;
+using Meadow_Framework.Core.Abstractions.Events.DomainEvent;
 
 namespace Meadow_Framework.Core.Abstractions.Primitives.Types;
 
