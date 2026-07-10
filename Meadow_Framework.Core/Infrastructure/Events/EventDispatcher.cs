@@ -31,13 +31,21 @@ public class EventDispatcher(
     {
         using IServiceScope scope = serviceProvider.CreateScope();
 
-        //var handlers = scope.ServiceProvider.GetServices<IEventHandler<TEvent>>().ToList();
-        List<IDomainEventHandler<TEvent>> handlers = scope.ServiceProvider.GetServices<IDomainEventHandler<TEvent>>().ToList();
+        // Resolve handlers by the event's runtime type, not TEvent: callers such as
+        // DomainEventEntitiesInterceptor publish events typed as IDomainEvent, and no
+        // handler is registered against the interface itself.
+        Type handlerType = typeof(IDomainEventHandler<>).MakeGenericType(@event.GetType());
+        List<object?> handlers = scope.ServiceProvider.GetServices(handlerType).ToList();
 
         if (handlers.Count == 0)
             return;
 
-        IEnumerable<Task> tasks = handlers.Select(h => h.HandleAsync(@event, cancellationToken));
+        System.Reflection.MethodInfo handleMethod =
+            handlerType.GetMethod(nameof(IDomainEventHandler<IDomainEvent>.HandleAsync))!;
+
+        IEnumerable<Task> tasks = handlers
+            .Where(h => h is not null)
+            .Select(h => (Task)handleMethod.Invoke(h, [@event, cancellationToken])!);
 
         await Task.WhenAll(tasks);
     }
