@@ -8,6 +8,7 @@ using Meadow_Framework.Core.Abstractions.Commands;
 using Meadow_Framework.Core.Abstractions.Dispatchers;
 using Meadow_Framework.Core.Abstractions.Events;
 using Meadow_Framework.Core.Abstractions.Exceptions;
+using Meadow_Framework.Core.Abstractions.Kernel;
 using Meadow_Framework.Core.Abstractions.Queries;
 using Meadow_Framework.Core.Abstractions.Repository;
 using Meadow_Framework.Core.Infrastructure.Commands;
@@ -17,7 +18,6 @@ using Meadow_Framework.Core.Infrastructure.Events;
 using Meadow_Framework.Core.Infrastructure.Exceptions;
 using Meadow_Framework.Core.Infrastructure.Jobs;
 using Meadow_Framework.Core.Infrastructure.Queries.Dispatcher;
-using Meadow_Framework.Core.Infrastructure.Repository;
 using Meadow_Framework.Core.Infrastructure.Security;
 using Meadow_Framework.Core.Infrastructure.Seed;
 
@@ -43,56 +43,57 @@ public static class Extensions
         bool needEvents = true,
         params Assembly[] assemblies)
     {
-
+        //services.AddEvents(assemblies);
         foreach (var assembly in assemblies)
         {
             services.AddCommands(assembly);
             services.AddQueries(assembly);
-            if (needEvents)
+            services.AddEvents(assembly);
+           // if (needEvents)
             {
-                services.AddEvents(assembly);
+
             }
         }
 
-        if (needEvents)
-        {
-            services.AddEventBus(configuration, assemblies);
-        }
+        // if (needEvents)
+        // {
+             services.AddEventBus(configuration, assemblies);
+        // }
 
         services.AddScoped<IDispatcher, Dispatcher>();
         services.AddErrorHandling();
 
-        if (needEvents)
-        {
-            IEnumerable<Type> dbContextTypes = FindDbContexts(assemblies);
-            foreach (Type dbContextType in dbContextTypes)
-            {
-
-                MethodInfo addDbContextMethod = typeof(EntityFrameworkServiceCollectionExtensions)
-                    .GetMethods()
-                    .First(m => m.Name == nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext)
-                                && m.IsGenericMethod
-                                && m.GetParameters().Length == 2
-                                && m.GetParameters()[1].ParameterType.IsGenericType
-                                && m.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(Action<,>))
-                    .MakeGenericMethod(dbContextType);
-
-                Action<IServiceProvider, DbContextOptionsBuilder> configureOptions = (sp, options) =>
-                {
-                    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                        .UseSnakeCaseNamingConvention()
-                        .EnableSensitiveDataLogging()
-                        .EnableDetailedErrors();
-                };
-
-                addDbContextMethod.Invoke(null,
-                    [services, configureOptions, ServiceLifetime.Scoped, ServiceLifetime.Scoped]);
-
-
-            }
-
-            services.AddScoped<IOutboxRepository, OutboxRepository<BaseDbContext>>();
-        }
+        // if (needEvents)
+        // {
+        //     IEnumerable<Type> dbContextTypes = FindDbContexts(assemblies);
+        //     foreach (Type dbContextType in dbContextTypes)
+        //     {
+        //
+        //         MethodInfo addDbContextMethod = typeof(EntityFrameworkServiceCollectionExtensions)
+        //             .GetMethods()
+        //             .First(m => m.Name == nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext)
+        //                         && m.IsGenericMethod
+        //                         && m.GetParameters().Length == 2
+        //                         && m.GetParameters()[1].ParameterType.IsGenericType
+        //                         && m.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(Action<,>))
+        //             .MakeGenericMethod(dbContextType);
+        //
+        //         Action<IServiceProvider, DbContextOptionsBuilder> configureOptions = (sp, options) =>
+        //         {
+        //             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+        //                 .UseSnakeCaseNamingConvention()
+        //                 .EnableSensitiveDataLogging()
+        //                 .EnableDetailedErrors();
+        //         };
+        //
+        //         addDbContextMethod.Invoke(null,
+        //             [services, configureOptions, ServiceLifetime.Scoped, ServiceLifetime.Scoped]);
+        //
+        //
+        //     }
+        //
+        //     services.AddScoped<IOutboxRepository, OutboxRepository<BaseDbContext>>();
+        // }
 
         return services;
     }
@@ -198,22 +199,30 @@ public static class Extensions
     /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
     /// <param name="assembly">The assembly to scan for event handlers.</param>
     /// <returns>The modified <see cref="IServiceCollection" />.</returns>
-    private static IServiceCollection AddEvents(this IServiceCollection services, Assembly assembly)
+    private static IServiceCollection AddEvents(
+        this IServiceCollection services,
+        Assembly assembly)
     {
         services.AddScoped<IEventDispatcher, EventDispatcher>();
 
-        // Get all types implementing IEventHandler<>
         IEnumerable<Type> eventHandlerTypes = assembly.GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false } && t.GetInterfaces()
-                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>)));
+            .Where(t =>
+                t is { IsClass: true, IsAbstract: false } &&
+                t.GetInterfaces().Any(i =>
+                    i.IsGenericType &&
+                    i.GetGenericTypeDefinition() == typeof(IDomainEventHandler<>)));
 
-        // Register each event handler as scoped
         foreach (Type type in eventHandlerTypes)
         {
             IEnumerable<Type> interfaces = type.GetInterfaces()
-                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
+                .Where(i =>
+                    i.IsGenericType &&
+                    i.GetGenericTypeDefinition() == typeof(IDomainEventHandler<>));
 
-            foreach (Type interfaceType in interfaces) services.AddScoped(interfaceType, type);
+            foreach (Type interfaceType in interfaces)
+            {
+                services.AddScoped(interfaceType, type);
+            }
         }
 
         return services;
@@ -253,29 +262,75 @@ public static class Extensions
     /// <param name="configuration">The configuration object for RabbitMQ and Quartz settings.</param>
     /// <param name="assemblies">The assemblies to scan for consumers.</param>
     /// <returns>The modified <see cref="IServiceCollection" />.</returns>
-    private static IServiceCollection AddEventBus(this IServiceCollection services, IConfiguration configuration, IEnumerable<Assembly> assemblies)
-    {
-        RabbitMqOptions? config = configuration.GetSection("AppConfiguration:RabbitMQ").Get<RabbitMqOptions>();
-        string? encryptionKey = configuration["AppConfiguration:RabbitMQ:EncryptionKey"];
+    // private static IServiceCollection AddEventBus1(this IServiceCollection services, IConfiguration configuration, IEnumerable<Assembly> assemblies)
+    // {
+    //     RabbitMqOptions? config = configuration.GetSection("AppConfiguration:RabbitMQ").Get<RabbitMqOptions>();
+    //     string? encryptionKey = configuration["AppConfiguration:RabbitMQ:EncryptionKey"];
+    //
+    //     // Add the required Quartz.NET services
+    //     services.AddQuartz(q =>
+    //     {
+    //         q.AddJobAndTrigger<OutboxJob>(configuration); // Register OutboxJob with trigger
+    //     });
+    //
+    //     services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true); // Ensure jobs complete before shutdown
+    //
+    //     services.AddMassTransit(configurator =>
+    //     {
+    //         var consumers = FindConsumers(assemblies).ToList();
+    //
+    //         foreach (var consumer in consumers)
+    //             configurator.AddConsumer(consumer);
+    //
+    //         ConfigureRabbitMq(configurator, config, encryptionKey, consumers);
+    //     });
+    //
+    //
+    //     return services;
+    // }
 
-        // Add the required Quartz.NET services
+    private static IServiceCollection AddEventBus(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IEnumerable<Assembly> assemblies)
+    {
+        var dbContextTypes = FindDbContexts(assemblies).ToList();
+
+        var rabbitMq = configuration.GetSection("AppConfiguration:RabbitMQ").Get<RabbitMqOptions>();
+        var encryptionKey = configuration["AppConfiguration:RabbitMQ:EncryptionKey"];
+
         services.AddQuartz(q =>
         {
-            q.AddJobAndTrigger<OutboxJob>(configuration); // Register OutboxJob with trigger
+            q.UseMicrosoftDependencyInjectionJobFactory();
+
+            foreach (var dbContextType in dbContextTypes)
+            {
+                var jobType = typeof(OutboxJob<>).MakeGenericType(dbContextType);
+
+                var jobKey = new JobKey($"{dbContextType.Name}.OutboxJob");
+
+                q.AddJob(jobType, jobKey);
+
+                q.AddTrigger(t => t
+                    .ForJob(jobKey)
+                    .WithIdentity($"{jobKey.Name}.trigger")
+                    .WithSimpleSchedule(x => x
+                        .WithInterval(TimeSpan.FromSeconds(10))
+                        .RepeatForever()));
+            }
         });
 
-        services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true); // Ensure jobs complete before shutdown
+        services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
         services.AddMassTransit(configurator =>
         {
-            var consumers = FindConsumers(assemblies).ToList();
+            List<Type> consumers = FindConsumers(assemblies).ToList();
 
             foreach (var consumer in consumers)
                 configurator.AddConsumer(consumer);
 
-            ConfigureRabbitMq(configurator, config, encryptionKey, consumers);
+            ConfigureRabbitMq(configurator, rabbitMq, encryptionKey, consumers);
         });
-
 
         return services;
     }

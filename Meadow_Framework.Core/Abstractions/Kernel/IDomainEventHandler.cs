@@ -6,7 +6,7 @@ namespace Meadow_Framework.Core.Abstractions.Kernel;
 ///     Defines a handler for processing domain events of type <typeparamref name="TEvent" />.
 /// </summary>
 /// <typeparam name="TEvent">The type of domain event that the handler processes.</typeparam>
-public interface IDomainEventHandler<in TEvent> where TEvent : class, IDomainEvent
+public interface IDomainEventHandler<in TEvent> where TEvent : IDomainEvent
 {
     /// <summary>
     ///     Handles the specified domain event asynchronously.

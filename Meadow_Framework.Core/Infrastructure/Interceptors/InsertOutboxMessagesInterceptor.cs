@@ -1,3 +1,4 @@
+using Meadow_Framework.Core.Abstractions.Events;
 using Meadow_Framework.Core.Abstractions.Primitives.Types;
 using Newtonsoft.Json;
 using Outbox_OutboxMessage = Meadow_Framework.Core.Abstractions.Outbox.OutboxMessage;
@@ -9,13 +10,19 @@ namespace Meadow_Framework.Core.Infrastructure.Interceptors;
 /// </summary>
 public sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
 {
+    /// <summary>
+    ///   Overrides the SavingChangesAsync method to convert domain events to outbox messages before saving changes to the database.
+    /// </summary>
+    /// <param name="eventData"></param>
+    /// <param name="result"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData,
         InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
         if (eventData.Context is not null)
         {
             _ = ConvertDomainEventsToOutboxMessages(eventData.Context);
-           // _ = ConvertDomainEventsToOutboxMessages(eventData.Context);
         }
 
         return base.SavingChangesAsync(eventData, result, cancellationToken);
@@ -23,12 +30,12 @@ public sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
 
     private static async Task<Task> ConvertDomainEventsToOutboxMessages(DbContext context)
     {
-        var outboxMessages = context.ChangeTracker
+        List<Outbox_OutboxMessage> outboxMessages = context.ChangeTracker
             .Entries<IAggregateRoot>()
             .Select(x => x.Entity)
             .SelectMany(aggregateRoot =>
             {
-                var domainEvents = aggregateRoot.GetDomainEvents();
+                IReadOnlyCollection<IDomainEvent> domainEvents = aggregateRoot.GetDomainEvents();
 
                 aggregateRoot.ClearDomainEvents();
 

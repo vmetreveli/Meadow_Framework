@@ -1,36 +1,37 @@
 using Meadow_Framework.Core.Abstractions.Outbox;
-using Outbox_OutboxMessage = Meadow_Framework.Core.Abstractions.Outbox.OutboxMessage;
+using Meadow_Framework.Core.Infrastructure.Context;
 
 namespace Meadow_Framework.Core.Abstractions.Repository;
 
 /// <summary>
-///     Defines the contract for a repository that handles outbox messages.
+/// Contract for Outbox repository (modular monolith safe).
 /// </summary>
-public interface IOutboxRepository
+public interface IOutboxRepository<TDbContext>
+    where TDbContext : BaseDbContext
 {
     /// <summary>
-    ///     Creates a new outbox message in the repository.
+    /// Creates a new outbox message if it does not already exist.
     /// </summary>
-    /// <param name="outboxMessage">The outbox message to create.</param>
-    void CreateOutboxMessage(Outbox_OutboxMessage outboxMessage);
+    Task CreateOutboxMessage(
+        OutboxMessage outboxMessage,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Asynchronously updates the state of an outbox message with the specified event ID.
+    /// Updates state of an existing outbox message.
     /// </summary>
-    /// <param name="eventId">The identifier of the event associated with the outbox message.</param>
-    /// <param name="state">The new state to set for the outbox message.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    Task UpdateOutboxMessageState(Guid eventId, OutboxMessageState state);
+    Task UpdateOutboxMessageState(
+        Guid eventId,
+        OutboxMessageState state,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Asynchronously retrieves all outbox messages that are ready to be sent.
+    /// Gets all messages ready to be published.
     /// </summary>
-    /// <returns>A task representing the asynchronous operation, with a result of a list of outbox messages ready to be sent.</returns>
-    Task<List<Outbox_OutboxMessage>> GetAllReadyToSend();
+    Task<List<OutboxMessage>> GetAllReadyToSend(
+        CancellationToken cancellationToken = default);
 
     /// <summary>
-    ///     Asynchronously saves changes made to the outbox repository.
+    /// Persists changes to database.
     /// </summary>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    Task SaveChange();
+    Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

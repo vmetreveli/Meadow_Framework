@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Meadow_Framework.Core.Abstractions.Events;
+using Meadow_Framework.Core.Abstractions.Kernel;
 using Meadow_Framework.Core.Abstractions.Outbox;
 using Meadow_Framework.Core.Abstractions.Primitives;
 using Meadow_Framework.Core.Abstractions.Repository;
@@ -11,10 +12,11 @@ namespace Meadow_Framework.Core.Infrastructure.Events;
 ///     It leverages a service provider to resolve event handlers and a publish endpoint for sending integration events.
 /// </summary>
 public class EventDispatcher(
-    IServiceProvider serviceProvider,
-    IPublishEndpoint publisher,
-    IOutboxRepository repository,
-    IUnitOfWork unitOfWork) : IEventDispatcher
+    IServiceProvider serviceProvider
+   // IPublishEndpoint publisher,
+   // IOutboxRepository repository,
+    //IUnitOfWork unitOfWork
+    ) : IEventDispatcher
 {
     /// <summary>
     ///     Publishes a domain event asynchronously by invoking all registered event handlers for the given event type.
@@ -27,17 +29,17 @@ public class EventDispatcher(
         CancellationToken cancellationToken = default)
         where TEvent : IDomainEvent
     {
-        using var scope = serviceProvider.CreateScope();
+        using IServiceScope scope = serviceProvider.CreateScope();
 
-        // Resolves all registered event handlers for the event type.
-        var handlers = scope.ServiceProvider.GetServices<IEventHandler<IEvent>>();
+        //var handlers = scope.ServiceProvider.GetServices<IEventHandler<TEvent>>().ToList();
+        List<IDomainEventHandler<TEvent>> handlers = scope.ServiceProvider.GetServices<IDomainEventHandler<TEvent>>().ToList();
 
-        // If there are any handlers, execute them asynchronously.
-        if (handlers.Any())
-        {
-            var tasks = handlers.Select(handler => handler.HandleAsync(@event, cancellationToken));
-            await Task.WhenAll(tasks); // Execute all handler tasks concurrently.
-        }
+        if (handlers.Count == 0)
+            return;
+
+        IEnumerable<Task> tasks = handlers.Select(h => h.HandleAsync(@event, cancellationToken));
+
+        await Task.WhenAll(tasks);
     }
 
     /// <summary>
@@ -52,24 +54,24 @@ public class EventDispatcher(
         CancellationToken cancellationToken = default)
         where TEvent : IntegrationBaseEvent
     {
-        try
-        {
-            // Publish the integration event to the message broker using MassTransit.
-            await publisher.Publish(@event, cancellationToken);
-
-            // If the publish succeeds, update the corresponding outbox message state to 'Completed'.
-            await repository.UpdateOutboxMessageState(@event.Id, OutboxMessageState.Completed);
-        }
-        catch (Exception ex)
-        {
-            // In case of failure, store the event in the outbox for retrying.
-            var outboxMessage = new OutboxMessage(@event, @event.Id, @event.CreationDate);
-            repository.CreateOutboxMessage(outboxMessage);
-        }
-        finally
-        {
-            // Persist changes to the repository (e.g., saving the outbox message).
-            await repository.SaveChange();
-        }
+        // try
+        // {
+        //     // Publish the integration event to the message broker using MassTransit.
+        //     await publisher.Publish(@event, cancellationToken);
+        //
+        //     // If the publish succeeds, update the corresponding outbox message state to 'Completed'.
+        //     await repository.UpdateOutboxMessageState(@event.Id, OutboxMessageState.Completed);
+        // }
+        // catch (Exception ex)
+        // {
+        //     // In case of failure, store the event in the outbox for retrying.
+        //     var outboxMessage = new OutboxMessage(@event, @event.Id, @event.CreationDate);
+        //     repository.CreateOutboxMessage(outboxMessage);
+        // }
+        // finally
+        // {
+        //     // Persist changes to the repository (e.g., saving the outbox message).
+        //     await repository.SaveChange();
+        // }
     }
 }
