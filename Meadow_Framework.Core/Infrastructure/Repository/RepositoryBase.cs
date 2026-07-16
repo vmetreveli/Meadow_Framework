@@ -273,20 +273,23 @@ public abstract class RepositoryBase<TDbContext, TEntity, TId>(TDbContext contex
         int pageSize,
         CancellationToken cancellationToken = default)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(pageIndex);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
+
         IQueryable<TEntity> query = context.Set<TEntity>();
 
-        var totalCount = context.Set<TEntity>().LongCountAsync(cancellationToken);
+        // A DbContext permits only one active operation, so the count must complete
+        // before the page query starts.
+        var totalCount = await query.LongCountAsync(cancellationToken);
 
-        var entities = await context
-            .Set<TEntity>()
-            .Include(p => p)
+        var entities = await query
             .AsNoTracking()
             .OrderBy(p => p.Id)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        return (entities, await totalCount);
+        return (entities, totalCount);
     }
 
 

@@ -1,64 +1,75 @@
-﻿using Meadow_Framework.Core.Abstractions.Dispatchers;
-using Meadow_Framework.Core.Abstractions.Events;
+using MassTransit;
+using Meadow_Framework.Core.Abstractions;
+using Meadow_Framework.Core.Abstractions.Outbox;
 using Meadow_Framework.Core.Abstractions.Repository;
-using Meadow_Framework.Core.Infrastructure.Context;
+using Microsoft.Extensions.Logging;
 using Quartz;
 
 namespace Meadow_Framework.Core.Infrastructure.Jobs;
 
 /// <summary>
-///     Represents a Quartz job responsible for processing and dispatching outbox messages.
-///     The job ensures that messages are only dispatched once by using outbox messaging patterns.
+///     Quartz job that publishes the outbox messages of a single <typeparamref name="TDbContext" /> to the
+///     message broker and records the outcome against each message.
 /// </summary>
+/// <typeparam name="TDbContext">The context whose outbox this job drains.</typeparam>
 [DisallowConcurrentExecution] // Ensures the job does not run concurrently.
-// public class OutboxJob(
-//     IServiceProvider serviceProvider,
-//     IEventDispatcher messagePublisher) : IJob
-// {
-//     /// <summary>
-//     ///     Executes the outbox job, fetching all ready-to-send messages from the outbox and dispatching them via the event
-//     ///     dispatcher.
-//     /// </summary>
-//     /// <param name="context">The context in which the job is executed, containing runtime information.</param>
-//     /// <returns>A task that represents the asynchronous operation.</returns>
-//     public async Task Execute(IJobExecutionContext context)
-//     {
-//         // Create a scope for resolving dependencies (outbox repository).
-//         using var scope = serviceProvider.CreateScope();
-//
-//         // Get the IOutboxRepository instance to interact with the outbox messages.
-//         var requiredService = scope.ServiceProvider.GetRequiredService<IOutboxRepository>();
-//
-//         // Retrieve all messages that are ready to be sent.
-//         var readyToSendItems = await requiredService.GetAllReadyToSend();
-//
-//         // Recreate the integration event from each outbox message and publish it using the event dispatcher.
-//         foreach (var eventMessage in readyToSendItems.Select(item => item.RecreateMessage()))
-//             // Publish the recreated integration event asynchronously.
-//             await messagePublisher.PublishIntegrationEventAsync(eventMessage);
-//     }
-// }
-
 public class OutboxJob<TDbContext>(
     IServiceProvider serviceProvider,
-    IEventDispatcher messagePublisher) : IJob
-    where TDbContext : BaseDbContext
+    MeadowOptions options,
+    ILogger<OutboxJob<TDbContext>> logger) : IJob
+    where TDbContext : DbContext, IDbContext
 {
     /// <summary>
-    /// Executes the outbox job, fetching all ready-to-send messages from the outbox and dispatching them via the event
+    ///     Publishes a batch of ready-to-send outbox messages.
     /// </summary>
-    /// <param name="context"></param>
+    /// <param name="context">The Quartz execution context.</param>
     public async Task Execute(IJobExecutionContext context)
     {
+        var cancellationToken = context.CancellationToken;
+
         using var scope = serviceProvider.CreateScope();
 
-        var repo = scope.ServiceProvider.GetRequiredService<IOutboxRepository<TDbContext>>();
+        var repository = scope.ServiceProvider.GetRequiredService<IOutboxRepository<TDbContext>>();
+        var publisher = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
 
-        var readyToSendItems = await repo.GetAllReadyToSend();
+        var messages = await repository.GetAllReadyToSend(options.OutboxBatchSize, cancellationToken);
 
-        foreach (var eventMessage in readyToSendItems.Select(x => x.RecreateMessage()))
+        if (messages.Count == 0)
+            return;
+
+        foreach (var message in messages)
         {
-            await messagePublisher.PublishIntegrationEventAsync(eventMessage);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                var @event = message.RecreateMessage();
+
+                // Publish against the runtime type so MassTransit routes on the concrete event contract.
+                await publisher.Publish(@event, @event.GetType(), cancellationToken);
+
+                message.ChangeState(OutboxMessageState.Completed);
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                // One poisoned message must not stop the rest of the batch.
+                message.RecordFailure(exception.ToString(), options.OutboxMaxRetries);
+
+                logger.LogError(
+                    exception,
+                    "Failed to publish outbox message {OutboxMessageId} (event {EventId}, attempt {RetryCount} of {MaxRetries}).",
+                    message.Id, message.EventId, message.RetryCount, options.OutboxMaxRetries);
+            }
         }
+
+        // Persist every outcome in the batch together. A crash before this point leaves the messages
+        // ReadyToSend, so they are retried — delivery is at-least-once.
+        await repository.SaveChangesAsync(cancellationToken);
+
+        var failed = messages.Count(m => m.State == OutboxMessageState.Failed);
+        if (failed > 0)
+            logger.LogWarning(
+                "{FailedCount} outbox message(s) for {DbContext} exhausted their retries and were marked Failed.",
+                failed, typeof(TDbContext).Name);
     }
 }

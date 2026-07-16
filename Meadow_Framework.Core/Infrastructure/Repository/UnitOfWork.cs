@@ -29,15 +29,6 @@ public class UnitOfWork<TDbContext>(TDbContext context) : IUnitOfWork
     }
 
     /// <summary>
-    ///     Disposes of the database context and suppresses finalization.
-    /// </summary>
-    public void Dispose()
-    {
-        context.Dispose();
-        GC.SuppressFinalize(this); // Prevents finalizer from running, as context is already disposed
-    }
-
-    /// <summary>
     ///     Begins a new database transaction with the specified isolation level and command timeout.
     /// </summary>
     /// <param name="isolationLevel">The isolation level for the transaction. Default is ReadCommitted.</param>

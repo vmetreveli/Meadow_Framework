@@ -1,64 +1,68 @@
-﻿using Meadow_Framework.Core.Abstractions.Outbox;
+using Meadow_Framework.Core.Abstractions;
+using Meadow_Framework.Core.Abstractions.Outbox;
 using Meadow_Framework.Core.Abstractions.Repository;
-using Meadow_Framework.Core.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Outbox_OutboxMessage = Meadow_Framework.Core.Abstractions.Outbox.OutboxMessage;
 
 namespace Meadow_Framework.Core.Infrastructure.Repository;
 
 /// <summary>
-/// Repository for Outbox pattern operations.
-/// Scoped per DbContext (modular monolith safe).
+///     Repository for Outbox pattern operations.
+///     Scoped per DbContext (modular monolith safe).
 /// </summary>
 public class OutboxRepository<TDbContext>(
     TDbContext context)
     : RepositoryBase<TDbContext, Outbox_OutboxMessage, Guid>(context),
         IOutboxRepository<TDbContext>
-    where TDbContext : BaseDbContext
+    where TDbContext : DbContext, IDbContext
 {
     /// <summary>
-    /// Creates outbox message if not exists (idempotent insert).
+    ///     Creates outbox message if not exists (idempotent insert).
     /// </summary>
-    public async Task CreateOutboxMessage(Outbox_OutboxMessage outboxMessage, CancellationToken cancellationToken = default)
+    public async Task CreateOutboxMessage(Outbox_OutboxMessage outboxMessage,
+        CancellationToken cancellationToken = default)
     {
-        var exists = await context.OutboxMessages
-            .AnyAsync(x => x.EventId == outboxMessage.EventId, cancellationToken: cancellationToken);
+        ArgumentNullException.ThrowIfNull(outboxMessage);
 
-        if (!exists)
-        {
-            context.OutboxMessages.Add(outboxMessage);
-        }
+        var exists = await context.Set<Outbox_OutboxMessage>()
+            .AnyAsync(x => x.EventId == outboxMessage.EventId, cancellationToken);
+
+        if (!exists) context.Set<Outbox_OutboxMessage>().Add(outboxMessage);
     }
 
     /// <summary>
-    /// Updates message state safely.
+    ///     Updates message state safely.
     /// </summary>
-    public async Task UpdateOutboxMessageState(Guid eventId, OutboxMessageState state, CancellationToken cancellationToken = default)
+    public async Task UpdateOutboxMessageState(Guid eventId, OutboxMessageState state,
+        CancellationToken cancellationToken = default)
     {
-        var outbox = await context.OutboxMessages
-            .FirstOrDefaultAsync(m => m.EventId == eventId, cancellationToken: cancellationToken);
+        var outbox = await context.Set<Outbox_OutboxMessage>()
+            .FirstOrDefaultAsync(m => m.EventId == eventId, cancellationToken);
 
-        if (outbox is null)
-            return;
-
-        outbox.ChangeState(state);
+        outbox?.ChangeState(state);
     }
 
     /// <summary>
-    /// Returns messages ready to be published.
+    ///     Returns the oldest messages ready to be published, up to <paramref name="maxCount" />.
     /// </summary>
-    public Task<List<Outbox_OutboxMessage>> GetAllReadyToSend(CancellationToken cancellationToken = default)
+    public Task<List<Outbox_OutboxMessage>> GetAllReadyToSend(int maxCount,
+        CancellationToken cancellationToken = default)
     {
-        return context.OutboxMessages
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxCount);
+
+        // Oldest first, so a burst of new events cannot starve messages already waiting.
+        return context.Set<Outbox_OutboxMessage>()
             .Where(m => m.State == OutboxMessageState.ReadyToSend)
-            .ToListAsync(cancellationToken: cancellationToken);
+            .OrderBy(m => m.EventDate)
+            .Take(maxCount)
+            .ToListAsync(cancellationToken);
     }
 
     /// <summary>
-    /// Persists changes.
+    ///     Persists changes.
     /// </summary>
     public Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return context.SaveChangesAsync(cancellationToken: cancellationToken);
+        return context.SaveChangesAsync(cancellationToken);
     }
 }

@@ -18,5 +18,10 @@ public enum OutboxMessageState
     /// <summary>
     ///     The message has been successfully processed or completed.
     /// </summary>
-    Completed = 3
+    Completed = 3,
+
+    /// <summary>
+    ///     The message exhausted its retry attempts and will not be sent again without intervention.
+    /// </summary>
+    Failed = 4
 }

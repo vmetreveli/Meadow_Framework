@@ -43,9 +43,9 @@ public abstract class EntityBase<TId> : IEquatable<EntityBase<TId>>
     /// <param name="first">The first <see cref="EntityBase{TId}" /> instance.</param>
     /// <param name="second">The second <see cref="EntityBase{TId}" /> instance.</param>
     /// <returns>true if the two instances are equal; otherwise, false.</returns>
-    public static bool operator ==(EntityBase<TId> first, EntityBase<TId> second)
+    public static bool operator ==(EntityBase<TId>? first, EntityBase<TId>? second)
     {
-        return first is not null && second is not null && first.Equals(second);
+        return first is null ? second is null : first.Equals(second);
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public abstract class EntityBase<TId> : IEquatable<EntityBase<TId>>
     /// <param name="first">The first <see cref="EntityBase{TId}" /> instance.</param>
     /// <param name="second">The second <see cref="EntityBase{TId}" /> instance.</param>
     /// <returns>true if the two instances are not equal; otherwise, false.</returns>
-    public static bool operator !=(EntityBase<TId> first, EntityBase<TId> second)
+    public static bool operator !=(EntityBase<TId>? first, EntityBase<TId>? second)
     {
         return !(first == second);
     }

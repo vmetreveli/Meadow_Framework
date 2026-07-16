@@ -1,32 +1,40 @@
-﻿using Meadow_Framework.Core.Abstractions.Primitives;
-using Newtonsoft.Json;
+using System.Text.Json;
+using Meadow_Framework.Core.Abstractions.Events;
+using Meadow_Framework.Core.Abstractions.Primitives;
 
 namespace Meadow_Framework.Core.Abstractions.Outbox;
 
 /// <summary>
-///     Represents an outbox message for handling asynchronous operations.
+///     Represents an event awaiting publication to the message broker, stored in the same
+///     transaction as the state change that produced it (transactional outbox pattern).
 /// </summary>
 public sealed class OutboxMessage : AggregateRoot<Guid>
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.General);
+
     // Private constructor for EF Core or other serialization mechanisms
     private OutboxMessage() : base(Guid.NewGuid())
     {
+        Data = string.Empty;
+        Type = string.Empty;
     }
 
     /// <summary>
     ///     Creates a new instance of the <see cref="OutboxMessage" /> class.
     /// </summary>
-    /// <param name="message">The message to be stored in the outbox.</param>
+    /// <param name="message">The event to be stored in the outbox.</param>
     /// <param name="eventId">The identifier for the event.</param>
     /// <param name="eventDate">The date when the event occurred.</param>
-    public OutboxMessage(object message, Guid eventId, DateTime eventDate) : base(Guid.NewGuid())
+    public OutboxMessage(IEvent message, Guid eventId, DateTime eventDate) : base(Guid.NewGuid())
     {
-        // Serialize the message to store it as a JSON string
-        Data = JsonConvert.SerializeObject(message);
+        ArgumentNullException.ThrowIfNull(message);
+
+        // Serialize against the runtime type: the static type here is IEvent, and serializing
+        // against it would emit an empty payload.
+        Data = JsonSerializer.Serialize(message, message.GetType(), SerializerOptions);
 
         // Store the type of the message for deserialization later
-        Type = message.GetType().FullName + ", " +
-               message.GetType().Assembly.GetName().Name;
+        Type = BuildTypeName(message.GetType());
 
         // Initialize properties
         EventId = eventId;
@@ -38,37 +46,47 @@ public sealed class OutboxMessage : AggregateRoot<Guid>
     /// <summary>
     ///     Gets the serialized message data.
     /// </summary>
-    public string Data { get; }
+    public string Data { get; private set; }
 
     /// <summary>
     ///     Gets the full name and assembly name of the message type.
     /// </summary>
-    public string Type { get; set; }
+    public string Type { get; private set; }
 
     /// <summary>
-    ///     Gets or sets the unique identifier for the event associated with the message.
+    ///     Gets the unique identifier for the event associated with the message.
     /// </summary>
     public Guid EventId { get; private set; }
 
     /// <summary>
-    ///     Gets or sets the date when the event occurred.
+    ///     Gets the date when the event occurred.
     /// </summary>
-    public DateTime EventDate { get; set; }
+    public DateTime EventDate { get; private set; }
 
     /// <summary>
-    ///     Gets or sets the state of the outbox message.
+    ///     Gets the state of the outbox message.
     /// </summary>
     public OutboxMessageState State { get; private set; }
 
     /// <summary>
-    ///     Gets or sets the date when the outbox message was last modified.
+    ///     Gets the date when the outbox message was last modified.
     /// </summary>
-    public DateTime ModifiedDate { get; set; }
+    public DateTime ModifiedDate { get; private set; }
 
     /// <summary>
-    ///     Gets or sets the content of the outbox message.
+    ///     Gets the number of failed publication attempts.
     /// </summary>
-    public string Content { get; set; }
+    public int RetryCount { get; private set; }
+
+    /// <summary>
+    ///     Gets the error from the most recent failed publication attempt, if any.
+    /// </summary>
+    public string? Error { get; private set; }
+
+    /// <summary>
+    ///     Gets the date the message was successfully published, if it has been.
+    /// </summary>
+    public DateTime? ProcessedOn { get; private set; }
 
     /// <summary>
     ///     Changes the state of the outbox message and updates the modification date.
@@ -78,14 +96,54 @@ public sealed class OutboxMessage : AggregateRoot<Guid>
     {
         State = state;
         ModifiedDate = DateTime.UtcNow;
+
+        if (state == OutboxMessageState.Completed)
+        {
+            ProcessedOn = ModifiedDate;
+            Error = null;
+        }
     }
 
     /// <summary>
-    ///     Recreates the original message object from the stored data.
+    ///     Records a failed publication attempt. Once <paramref name="maxRetries" /> attempts have failed the
+    ///     message moves to <see cref="OutboxMessageState.Failed" /> and is no longer picked up for sending.
     /// </summary>
-    /// <returns>The deserialized message object.</returns>
-    public dynamic? RecreateMessage()
+    /// <param name="error">The error that caused the attempt to fail.</param>
+    /// <param name="maxRetries">The number of attempts allowed before the message is considered poisoned.</param>
+    public void RecordFailure(string error, int maxRetries)
     {
-        return JsonConvert.DeserializeObject(Data, System.Type.GetType(Type));
+        RetryCount++;
+        Error = error.Length > 2000 ? error[..2000] : error;
+        State = RetryCount >= maxRetries ? OutboxMessageState.Failed : OutboxMessageState.ReadyToSend;
+        ModifiedDate = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    ///     Recreates the original event from the stored data.
+    /// </summary>
+    /// <returns>The deserialized event.</returns>
+    /// <exception cref="InvalidOperationException">
+    ///     The stored type cannot be resolved, or does not describe an <see cref="IEvent" />.
+    /// </exception>
+    public IEvent RecreateMessage()
+    {
+        var messageType = System.Type.GetType(Type);
+
+        if (messageType is null)
+            throw new InvalidOperationException(
+                $"Outbox message '{Id}' refers to type '{Type}', which cannot be resolved in this application.");
+
+        // The type name comes from the database. Refuse anything that is not an event rather than
+        // letting a tampered row drive construction of an arbitrary type.
+        if (!typeof(IEvent).IsAssignableFrom(messageType))
+            throw new InvalidOperationException(
+                $"Outbox message '{Id}' refers to type '{Type}', which is not an {nameof(IEvent)}.");
+
+        return (IEvent)JsonSerializer.Deserialize(Data, messageType, SerializerOptions)!;
+    }
+
+    private static string BuildTypeName(System.Type type)
+    {
+        return $"{type.FullName}, {type.Assembly.GetName().Name}";
     }
 }

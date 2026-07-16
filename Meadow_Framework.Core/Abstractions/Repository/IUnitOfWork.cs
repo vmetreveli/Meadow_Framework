@@ -5,7 +5,11 @@ namespace Meadow_Framework.Core.Abstractions.Repository;
 /// <summary>
 ///     Defines the contract for a unit of work that manages transactional operations and persistence of changes.
 /// </summary>
-public interface IUnitOfWork : IDisposable
+/// <remarks>
+///     The unit of work does not own the underlying <see cref="DbContext" /> — the dependency injection
+///     container controls its lifetime — so this contract is deliberately not <see cref="IDisposable" />.
+/// </remarks>
+public interface IUnitOfWork
 {
     /// <summary>
     ///     Asynchronously commits all changes made in the current unit of work.

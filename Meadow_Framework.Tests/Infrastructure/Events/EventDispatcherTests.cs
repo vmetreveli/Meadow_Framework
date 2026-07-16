@@ -1,10 +1,10 @@
 using FluentAssertions;
 using MassTransit;
 using Meadow_Framework.Core.Abstractions.Events;
-using Meadow_Framework.Core.Abstractions.Outbox;
-using Meadow_Framework.Core.Abstractions.Primitives;
-using Meadow_Framework.Core.Abstractions.Repository;
+using Meadow_Framework.Core.Abstractions.Kernel;
 using Meadow_Framework.Core.Infrastructure.Events;
+using Meadow_Framework.Core.Infrastructure.Exceptions;
+using Meadow_Framework.Tests.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -13,94 +13,113 @@ namespace Meadow_Framework.Tests.Infrastructure.Events;
 
 public class EventDispatcherTests
 {
-    private readonly Mock<IServiceProvider> _serviceProviderMock;
-    private readonly Mock<IPublishEndpoint> _publishEndpointMock;
-    private readonly Mock<IOutboxRepository> _outboxRepositoryMock;
-    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
-    private readonly EventDispatcher _eventDispatcher;
-    private readonly Mock<IServiceScopeFactory> _serviceScopeFactoryMock;
-    private readonly Mock<IServiceScope> _serviceScopeMock;
-
-    public EventDispatcherTests()
+    private static EventDispatcher CreateDispatcher(Action<IServiceCollection>? configure = null)
     {
-        _serviceProviderMock = new Mock<IServiceProvider>();
-        _publishEndpointMock = new Mock<IPublishEndpoint>();
-        _outboxRepositoryMock = new Mock<IOutboxRepository>();
-        _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _serviceScopeFactoryMock = new Mock<IServiceScopeFactory>();
-        _serviceScopeMock = new Mock<IServiceScope>();
+        var services = new ServiceCollection();
+        configure?.Invoke(services);
 
-        _serviceProviderMock.Setup(x => x.GetService(typeof(IServiceScopeFactory)))
-            .Returns(_serviceScopeFactoryMock.Object);
-        _serviceScopeFactoryMock.Setup(x => x.CreateScope())
-            .Returns(_serviceScopeMock.Object);
-        _serviceScopeMock.Setup(x => x.ServiceProvider)
-            .Returns(_serviceProviderMock.Object);
-
-        _eventDispatcher = new EventDispatcher(
-            _serviceProviderMock.Object,
-            _publishEndpointMock.Object,
-            _outboxRepositoryMock.Object,
-            _unitOfWorkMock.Object);
+        return new EventDispatcher(services.BuildServiceProvider());
     }
 
-    public class TestDomainEvent : IDomainEvent
+    private sealed class RecordingHandler : IDomainEventHandler<TestDomainEvent>
     {
-    }
+        public List<TestDomainEvent> Handled { get; } = [];
 
-    public class TestIntegrationEvent : IntegrationBaseEvent
-    {
-        public TestIntegrationEvent(Guid id, DateTime creationDate) : base(id, creationDate)
+        public Task HandleAsync(TestDomainEvent @event, CancellationToken cancellationToken = default)
         {
+            Handled.Add(@event);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class SecondRecordingHandler : IDomainEventHandler<TestDomainEvent>
+    {
+        public List<TestDomainEvent> Handled { get; } = [];
+
+        public Task HandleAsync(TestDomainEvent @event, CancellationToken cancellationToken = default)
+        {
+            Handled.Add(@event);
+            return Task.CompletedTask;
         }
     }
 
     [Fact]
-    public async Task PublishDomainEventAsync_ShouldInvokeHandlers()
+    public async Task PublishDomainEventAsync_ShouldInvokeRegisteredHandler()
     {
-        // Arrange
-        var domainEvent = new TestDomainEvent();
-        var handlerMock = new Mock<IEventHandler<IEvent>>();
-        
-        // Setup service provider to return the handler
-        _serviceProviderMock.Setup(x => x.GetService(typeof(IEnumerable<IEventHandler<IEvent>>)))
-            .Returns(new List<IEventHandler<IEvent>> { handlerMock.Object });
+        var handler = new RecordingHandler();
+        var dispatcher = CreateDispatcher(s => s.AddSingleton<IDomainEventHandler<TestDomainEvent>>(handler));
+        var domainEvent = new TestDomainEvent("created");
 
-        // Act
-        await _eventDispatcher.PublishDomainEventAsync(domainEvent);
+        await dispatcher.PublishDomainEventAsync(domainEvent);
 
-        // Assert
-        handlerMock.Verify(x => x.HandleAsync(domainEvent, It.IsAny<CancellationToken>()), Times.Once);
+        handler.Handled.Should().ContainSingle().Which.Should().BeSameAs(domainEvent);
     }
 
     [Fact]
-    public async Task PublishIntegrationEventAsync_ShouldPublishAndCompleteOutboxMessage_WhenSuccessful()
+    public async Task PublishDomainEventAsync_ShouldResolveHandlersByRuntimeType_WhenPublishedAsInterface()
     {
-        // Arrange
-        var integrationEvent = new TestIntegrationEvent(Guid.NewGuid(), DateTime.UtcNow);
+        // Regression: callers such as DomainEventEntitiesInterceptor publish events typed as IDomainEvent.
+        // Resolving handlers from the compile-time generic argument would silently drop the event.
+        var handler = new RecordingHandler();
+        var dispatcher = CreateDispatcher(s => s.AddSingleton<IDomainEventHandler<TestDomainEvent>>(handler));
+        IDomainEvent domainEvent = new TestDomainEvent("created");
 
-        // Act
-        await _eventDispatcher.PublishIntegrationEventAsync(integrationEvent);
+        await dispatcher.PublishDomainEventAsync(domainEvent);
 
-        // Assert
-        _publishEndpointMock.Verify(x => x.Publish(integrationEvent, It.IsAny<CancellationToken>()), Times.Once);
-        _outboxRepositoryMock.Verify(x => x.UpdateOutboxMessageState(integrationEvent.Id, OutboxMessageState.Completed), Times.Once);
-        _outboxRepositoryMock.Verify(x => x.SaveChange(), Times.Once);
+        handler.Handled.Should().ContainSingle();
     }
 
     [Fact]
-    public async Task PublishIntegrationEventAsync_ShouldCreateOutboxMessage_WhenPublishFails()
+    public async Task PublishDomainEventAsync_ShouldInvokeEveryHandlerForTheEvent()
     {
-        // Arrange
+        var first = new RecordingHandler();
+        var second = new SecondRecordingHandler();
+        var dispatcher = CreateDispatcher(s =>
+        {
+            s.AddSingleton<IDomainEventHandler<TestDomainEvent>>(first);
+            s.AddSingleton<IDomainEventHandler<TestDomainEvent>>(second);
+        });
+
+        await dispatcher.PublishDomainEventAsync(new TestDomainEvent("created"));
+
+        first.Handled.Should().ContainSingle();
+        second.Handled.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task PublishDomainEventAsync_ShouldNotThrow_WhenNoHandlerIsRegistered()
+    {
+        var dispatcher = CreateDispatcher();
+
+        var publish = async () => await dispatcher.PublishDomainEventAsync(new TestDomainEvent("created"));
+
+        await publish.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task PublishIntegrationEventAsync_ShouldPublishToTheBroker()
+    {
+        var publishEndpoint = new Mock<IPublishEndpoint>();
+        var dispatcher = CreateDispatcher(s => s.AddSingleton(publishEndpoint.Object));
         var integrationEvent = new TestIntegrationEvent(Guid.NewGuid(), DateTime.UtcNow);
-        _publishEndpointMock.Setup(x => x.Publish(integrationEvent, It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("Publish failed"));
 
-        // Act
-        await _eventDispatcher.PublishIntegrationEventAsync(integrationEvent);
+        await dispatcher.PublishIntegrationEventAsync(integrationEvent);
 
-        // Assert
-        _outboxRepositoryMock.Verify(x => x.CreateOutboxMessage(It.Is<OutboxMessage>(m => m.EventId == integrationEvent.Id)), Times.Once);
-        _outboxRepositoryMock.Verify(x => x.SaveChange(), Times.Once);
+        // Published against the runtime type so MassTransit routes on the concrete contract.
+        publishEndpoint.Verify(
+            x => x.Publish(integrationEvent, typeof(TestIntegrationEvent), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task PublishIntegrationEventAsync_ShouldThrowClearError_WhenEventBusIsNotRegistered()
+    {
+        var dispatcher = CreateDispatcher();
+
+        var publish = async () =>
+            await dispatcher.PublishIntegrationEventAsync(new TestIntegrationEvent(Guid.NewGuid(), DateTime.UtcNow));
+
+        await publish.Should().ThrowAsync<FrameworkException>()
+            .WithMessage("*event bus is not registered*");
     }
 }

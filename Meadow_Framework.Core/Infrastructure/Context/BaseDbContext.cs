@@ -1,9 +1,11 @@
-﻿using Meadow_Framework.Core.Abstractions;
+using Meadow_Framework.Core.Abstractions;
+using Meadow_Framework.Core.Infrastructure.Context.Configurations;
 
 namespace Meadow_Framework.Core.Infrastructure.Context;
 
 /// <summary>
-///
+///     Base class for framework-aware database contexts. Provides the outbox storage and applies
+///     entity configurations found in the derived context's own assembly.
 /// </summary>
 public abstract class BaseDbContext(DbContextOptions options) : DbContext(options), IDbContext
 {
@@ -18,7 +20,11 @@ public abstract class BaseDbContext(DbContextOptions options) : DbContext(option
     /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        // The framework's own configurations, then the derived context's assembly, which is where a
+        // consuming application declares its entity configurations.
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfig());
+        modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
+
         base.OnModelCreating(modelBuilder);
     }
 }
